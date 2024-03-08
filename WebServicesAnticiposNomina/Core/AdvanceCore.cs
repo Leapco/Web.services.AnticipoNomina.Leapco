@@ -84,7 +84,7 @@ namespace WebServicesAnticiposNomina.Core
                     if (dataUser.Rows[0]["state"].ToString() == "1")
                     {
                         if (!CreateContract(dataUser)) CreateContract(dataUser);
-
+                         
                         string bodyEmail = GetBodyEmailCode(dataUser);
                         utilities.SendEmail(dataUser.Rows[0]["email"].ToString(), "Anticipo generado", bodyEmail, true, _configuration["route:pathContrato"] + $"\\{dataUser.Rows[0]["id_anticipo"]}.pdf");
 
