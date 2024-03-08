@@ -87,7 +87,7 @@ namespace WebServicesAnticiposNomina.Models.DataBase.Utilities
                 string? _smtpUsername = _configuration["Email:smtpUsername"];
                 string? _smtpPassword = _configuration["Email:smtpPassword"];                
 
-                toAddress = "informatica3@gigha.com.co";
+                //toAddress = "informatica3@gigha.com.co";
 
                 using (MailMessage mail = new MailMessage())
                 {

@@ -31,7 +31,7 @@ namespace WebServicesAnticiposNomina.Controllers
         {
             Utilities utilities = new(_Configuration);
             //await utilities.SendSms(celular, "Mensaje de prueba...");
-            utilities.SendEmail("informatica3@gigha.com.co", "Anticipo generado", "prueba", true, "");
+           // utilities.SendEmail("informatica3@gigha.com.co", "Anticipo generado", "prueba", true, "");
 
                 var message = new MimeMessage();
                 message.From.Add(new MailboxAddress("joshua", "notificaciones@info.anticipodenomina.com.co"));
@@ -40,7 +40,7 @@ namespace WebServicesAnticiposNomina.Controllers
                      
                 using (var client = new SmtpClient())
                 {
-                    await client.ConnectAsync("info.anticipodenomina.com.co", 587, false);
+                    await client.ConnectAsync("mail.info.anticipodenomina.com.co", 465, false);
                     await client.AuthenticateAsync("notificaciones@info.anticipodenomina.com.co", "infoadn2024$%");
                     await client.SendAsync(message);
                     await client.DisconnectAsync(true);

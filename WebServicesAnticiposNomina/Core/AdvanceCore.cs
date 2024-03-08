@@ -204,12 +204,13 @@ namespace WebServicesAnticiposNomina.Core
                 using (QRCode qrCode = new QRCode(qrCodeData))
                 {
                     // Obtiene la imagen del código QR con un tamaño de 20x20
-                    Bitmap qrCodeImage = qrCode.GetGraphic(20);
-
+                    Bitmap qrCodeImage = qrCode.GetGraphic(20);                                      
                     using (MemoryStream stream = new MemoryStream())
                     {
                         qrCodeImage.Save(stream, System.Drawing.Imaging.ImageFormat.Png);
                         byte[] imageBytes = stream.ToArray();
+                        qrCodeImage.Dispose();
+                        qrCode.Dispose();
                         return Convert.ToBase64String(imageBytes);
                     }
                 }
