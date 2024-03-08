@@ -1,0 +1,81 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset='UTF-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+    <title>Soporte de movimientos</title>
+    <link rel='preconnect' href='https://fonts.googleapis.com'>
+    <link rel='preconnect'
+          href='https://fonts.gstatic.com'
+          crossorigin='crossorigin'>
+    <link href='https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap'
+          rel='stylesheet'>
+    <style>
+        html {
+            height: 100vh;
+            background-color: #f6f6f6;
+        }
+
+        body {
+            margin: 0 auto;
+            font-family: 'Inter', sans-serif;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: white;
+            padding: 1.5rem 3rem;
+            background-color: #0d343d; /* Color primario */
+        }
+
+            header > h1 {
+                color: white; /* Color titulo */
+                font-size: 24px;
+                margin: 0;
+            }
+
+        main {
+            display: flex;
+            flex-direction: column;
+            padding: 1rem 3rem;
+        }
+
+            main > div {
+                max-width: 12rem;
+                max-height: 12rem;
+                border: 1px solid #e7e7e7;
+                border-radius: 0.3rem;
+                border-style: dashed;
+                padding: 0.3rem;
+            }
+
+            main > img {
+                max-width: 12rem;
+                max-height: 12rem;
+            }
+
+        footer {
+            text-align: center;
+            padding: 1rem 3rem;
+            background-color: #e7e7e7; /* Color terciario */
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <h1>Contrato del Anticipo</h1>
+        <img src="https://sigha.com.co/sigha/_lib/img/logos/Anticipos_Nomina_White.png">
+    </header>
+    <main>
+        <p id="contrato"></p>
+        <div class="img-container">
+            <img id="foto">
+        </div>
+    </main>
+    <footer>
+        <span id="firma">112HJK345LLJ322HJK</span>
+    </footer>
+</body>
+</html>
