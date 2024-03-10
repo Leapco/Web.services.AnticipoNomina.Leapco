@@ -9,6 +9,9 @@ using MailKit.Net.Smtp;
 using MimeKit;
 using DocumentFormat.OpenXml.EMMA;
 using SmtpClient = MailKit.Net.Smtp.SmtpClient;
+using WebServicesAnticiposNomina.Core;
+using WebServicesAnticiposNomina.Models.Class.Response;
+using WebServicesAnticiposNomina.Models.PaymentGateway;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -128,5 +131,22 @@ namespace WebServicesAnticiposNomina.Controllers
         //    }
 
         //}
+
+
+        [HttpPost]
+        public ResponseModels Post()
+        {
+            ResponseModels result = new();
+            try
+            {
+                ApiCobre apiCobre = new ApiCobre(_Configuration);
+                apiCobre.GetAuthToken();
+            }
+            catch (Exception)
+            {
+                result.CodeResponse = "401";                
+            }
+            return result;
+        }
     }
 }

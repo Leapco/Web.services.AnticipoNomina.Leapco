@@ -1,6 +1,4 @@
 ﻿using System.Data;
-using System.Net.Mail;
-using System.Net;
 using WebServicesAnticiposNomina.Models.Class.Request;
 using WebServicesAnticiposNomina.Models.Class.Response;
 using WebServicesAnticiposNomina.Models.DataBase.Utilities;
