@@ -46,10 +46,11 @@ namespace WebServicesAnticiposNomina.Core
 
                         SecurityCore securityCore = new(_configuration);
                         string token = securityCore.GenerateToken(loginRequest.UserName, "");
+                        UtilitiesCore utilitiesCore = new();
 
                         responseModels.CodeResponse = "200";
                         responseModels.Token = token;
-                        responseModels.Data = this.GetDataUser(dataLogin);
+                        responseModels.Data = utilitiesCore.GetDataUser(dataLogin);
                     }
                     else
                         responseModels.CodeResponse = "401";
@@ -60,22 +61,6 @@ namespace WebServicesAnticiposNomina.Core
             {
                 throw;
             }
-        }
-        public DataUser GetDataUser(DataTable dataLogin)
-        {
-
-            EmpleadoClass? empleado = JsonConvert.DeserializeObject<EmpleadoClass>(dataLogin.Rows[0]["empleado"].ToString());
-            ParametrosClienteClass? parametrosCliente = JsonConvert.DeserializeObject<ParametrosClienteClass>(dataLogin.Rows[0]["parametros_cliente"].ToString());
-            List<AnticipoClass>? Anticipos = JsonConvert.DeserializeObject<List<AnticipoClass>>(dataLogin.Rows[0]["anticipos"].ToString());
-
-            DataUser dataUser = new()
-            {
-                SaldoDisponible = Convert.ToDecimal(dataLogin.Rows[0]["saldoDisponible"]),
-                DataEmpleado = empleado,
-                DataParametrosCliente = parametrosCliente,
-                DataAnticipos = Anticipos
-            };
-            return dataUser;
-        }
+        }        
     }
 }

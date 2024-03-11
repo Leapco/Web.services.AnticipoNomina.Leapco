@@ -89,5 +89,23 @@ namespace WebServicesAnticiposNomina.Models.SQLServer
                 throw;
             }
         }
+        public DataTable GetDataGeneral(string ID, int Option)
+        {
+            try
+            {
+                dbConnection = new ConnectionModel(_configuration);
+
+                List<SqlParameter> parameters = new()
+                {
+                    dbConnection.CreateParam("ID", ID, DbType.String),
+                    dbConnection.CreateParam("Option", Option, DbType.Int16)
+                };
+                return dbConnection.GetDataTable("ConsultarDatosGenerales", parameters);
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
     }
 }

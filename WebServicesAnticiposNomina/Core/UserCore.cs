@@ -151,5 +151,41 @@ namespace WebServicesAnticiposNomina.Core
             }
             return responseModels;
         }
+        public ResponseLoginModels GetDataGeneral(string ID, int Option, string Token)
+        {
+            ResponseLoginModels responseModels = new();
+            try
+            {
+                SecurityCore securityCore1 = new(_configuration);
+                if (securityCore1.IsTokenValid(Token))
+                {
+                    UserModel userModel = new(_configuration);
+                    DataTable dataUser = userModel.GetDataGeneral(ID, 1);
+                    responseModels.MessageResponse = dataUser.Rows[0]["msg"].ToString();
+
+                    if (dataUser.Rows[0]["code"].ToString() == "1")
+                    {
+                        UtilitiesCore utilitiesCore = new();
+
+                        responseModels.Token = Token;
+                        responseModels.CodeResponse = "201";
+                        responseModels.Data = utilitiesCore.GetDataUser(dataUser);
+                    }
+                    else
+                        responseModels.CodeResponse = "200";
+                }
+                else
+                {
+                    responseModels.MessageResponse = "Token expirado";
+                    responseModels.CodeResponse = "401";
+                }
+            }
+            catch (Exception)
+            {
+                responseModels.MessageResponse = "Error al consultar.";
+                responseModels.CodeResponse = "500";
+            }
+            return responseModels;
+        }
     }
 }
