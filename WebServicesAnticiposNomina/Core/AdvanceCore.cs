@@ -162,10 +162,10 @@ namespace WebServicesAnticiposNomina.Core
                 htmlContent = htmlContent.Replace("<p id=\"contrato\"></p>", $"<p id=\"textContract\">{textContract}</p>");
                 System.IO.File.WriteAllText(pathContract, htmlContent);
 
-                htmlContent = htmlContent.Replace("<img id=\"foto\">", $"<img id=\"foto\" src=\"data:image/png;base64,{base64Image}\" alt =\"Imagen Base64\">");
+                htmlContent = htmlContent.Replace("<img class=\"img-item\" id=\"foto\">", $"<img class=\"img-item\" id=\"foto\" src=\"data:image/png;base64,{base64Image}\" alt =\"Imagen Base64\">");
                 System.IO.File.WriteAllText(pathContract, htmlContent);
 
-                htmlContent = htmlContent.Replace("<img id=\"QR\">", $"<img id=\"QR\" src=\"data:image/png;base64,{base64Signature}\" alt =\"Imagen Base64\" width=\"50\" height=\"50\">");
+                htmlContent = htmlContent.Replace("<img class=\"img-item\" id=\"QR\">", $"<img class=\"img-item\" id=\"QR\" src=\"data:image/png;base64,{base64Signature}\" alt =\"Imagen Base64\" width=\"50\" height=\"50\">");
                 System.IO.File.WriteAllText(pathContract, htmlContent);
 
                 return true;
