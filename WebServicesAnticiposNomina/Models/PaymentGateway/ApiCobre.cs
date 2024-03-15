@@ -1,4 +1,6 @@
-﻿using System.Text;
+﻿using PdfSharpCore.Pdf;
+using System.Text;
+using WebServicesAnticiposNomina.Models.Class;
 
 namespace WebServicesAnticiposNomina.Models.PaymentGateway
 {
@@ -31,6 +33,38 @@ namespace WebServicesAnticiposNomina.Models.PaymentGateway
 
                 // Realiza la solicitud POST de forma síncrona
                 var response = httpClient.PostAsync(_configuration["paymentGateway:route"], requestContent).Result;
+
+                // Lee y retorna el contenido de la respuesta
+                if (response.IsSuccessStatusCode)
+                {
+                    var responseContent = response.Content.ReadAsStringAsync().Result;
+                    return responseContent;
+                }
+                else
+                {
+                    throw new Exception($"Failed to get auth token. Status code: {response.StatusCode}");
+                }
+            }
+        }
+        public string PostPayment(string Token, PaymentClass paymentClass)
+        {            
+            using (var httpClient = new HttpClient())
+            {
+                var correlationId = "";
+                httpClient.DefaultRequestHeaders.Add("Accept", "application/json");
+                httpClient.DefaultRequestHeaders.Add("X-APIGW-AUTH", Token);
+                httpClient.DefaultRequestHeaders.Add("X-API-KEY", _configuration["paymentGateway:x-api-key"]);
+
+                if (!string.IsNullOrEmpty(correlationId))
+                {
+                    httpClient.DefaultRequestHeaders.Add("X-CORRELATION-ID", correlationId);
+                }
+
+                var jsonRequest = Newtonsoft.Json.JsonConvert.SerializeObject(paymentClass);
+                var content = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
+
+                // Realiza la solicitud POST de forma síncrona
+                var response = httpClient.PostAsync(_configuration["paymentGateway:route"], content).Result;
 
                 // Lee y retorna el contenido de la respuesta
                 if (response.IsSuccessStatusCode)
