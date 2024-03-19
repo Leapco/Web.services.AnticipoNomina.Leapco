@@ -1,17 +1,9 @@
-﻿using DocumentFormat.OpenXml.Vml;
-using Microsoft.AspNetCore.Mvc;
-using System.Net.Mail;
-using System.Runtime.InteropServices;
-using WebServicesAnticiposNomina.Models.Class.Request;
-using WebServicesAnticiposNomina.Models.DataBase.Utilities;
-using Word = Microsoft.Office.Interop.Word;
-using MailKit.Net.Smtp;
+﻿using Microsoft.AspNetCore.Mvc;
 using MimeKit;
-using DocumentFormat.OpenXml.EMMA;
-using SmtpClient = MailKit.Net.Smtp.SmtpClient;
-using WebServicesAnticiposNomina.Core;
 using WebServicesAnticiposNomina.Models.Class.Response;
+using WebServicesAnticiposNomina.Models.DataBase.Utilities;
 using WebServicesAnticiposNomina.Models.PaymentGateway;
+using SmtpClient = MailKit.Net.Smtp.SmtpClient;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -34,21 +26,21 @@ namespace WebServicesAnticiposNomina.Controllers
         {
             Utilities utilities = new(_Configuration);
             //await utilities.SendSms(celular, "Mensaje de prueba...");
-           // utilities.SendEmail("informatica3@gigha.com.co", "Anticipo generado", "prueba", true, "");
+            // utilities.SendEmail("informatica3@gigha.com.co", "Anticipo generado", "prueba", true, "");
 
-                var message = new MimeMessage();
-                message.From.Add(new MailboxAddress("joshua", "notificaciones@info.anticipodenomina.com.co"));
-                message.To.Add(new MailboxAddress("", "informatica3@gigha.com.co"));
-                message.Subject = "Prueba email";
-                     
-                using (var client = new SmtpClient())
-                {
-                    await client.ConnectAsync("mail.info.anticipodenomina.com.co", 465, false);
-                    await client.AuthenticateAsync("notificaciones@info.anticipodenomina.com.co", "infoadn2024$%");
-                    await client.SendAsync(message);
-                    await client.DisconnectAsync(true);
-                }
-            
+            var message = new MimeMessage();
+            message.From.Add(new MailboxAddress("joshua", "notificaciones@info.anticipodenomina.com.co"));
+            message.To.Add(new MailboxAddress("", "informatica3@gigha.com.co"));
+            message.Subject = "Prueba email";
+
+            using (var client = new SmtpClient())
+            {
+                await client.ConnectAsync("mail.info.anticipodenomina.com.co", 465, false);
+                await client.AuthenticateAsync("notificaciones@info.anticipodenomina.com.co", "infoadn2024$%");
+                await client.SendAsync(message);
+                await client.DisconnectAsync(true);
+            }
+
 
             return "Mensaje enviado";
         }
@@ -134,17 +126,18 @@ namespace WebServicesAnticiposNomina.Controllers
 
 
         [HttpPost]
-        public ResponseModels Post()
+        public string Post()
         {
-            ResponseModels result = new();
+            string result = "";
             try
             {
                 ApiCobre apiCobre = new ApiCobre(_Configuration);
-                apiCobre.GetAuthToken();
+               
+                result = apiCobre.PostAuthToken();
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                result.CodeResponse = "401";                
+                result = "401";
             }
             return result;
         }

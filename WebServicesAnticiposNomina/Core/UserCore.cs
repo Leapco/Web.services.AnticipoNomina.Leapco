@@ -32,7 +32,7 @@ namespace WebServicesAnticiposNomina.Core
                     //string bodyEmail = "Código de recuperación: " + code;
                     utilities.SendEmail(dataUser.Rows[0]["email"].ToString(), "Recuperacion de contraseña", bodyEmail, true, "");
 
-                    responseModels.Token = "eyJ1bmlxdWVfbmFtZSI6IjEwMjYxMzAwMjIiLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3VzZXJkYXRhIjoiIiwibmJmIjoxNzEwNDQyNjEyLCJleHAiOjE3MTA0NDYyMTIsImlhdCI6MTcxMDQ0MjYxMn0";
+                    responseModels.Token = _configuration["JwtSettings:SecretKeyChangePass"];
                     responseModels.CodeResponse = "201";
                     responseModels.Data = "{'codigo': '" + code + "'}";
                 }
@@ -52,7 +52,7 @@ namespace WebServicesAnticiposNomina.Core
             try
             {
                 SecurityCore securityCore1 = new(_configuration);
-                if (Token == "eyJ1bmlxdWVfbmFtZSI6IjEwMjYxMzAwMjIiLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3VzZXJkYXRhIjoiIiwibmJmIjoxNzEwNDQyNjEyLCJleHAiOjE3MTA0NDYyMTIsImlhdCI6MTcxMDQ0MjYxMn0")
+                if (Token == _configuration["JwtSettings:SecretKeyChangePass"])
                 {
                     UserModel userModel = new(_configuration);
                     Utilities utilities = new(_configuration);

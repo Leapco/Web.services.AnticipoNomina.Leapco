@@ -1,12 +1,11 @@
-﻿using SelectPdf;
+﻿using QRCoder;
+using SelectPdf;
 using System.Data;
 using System.Drawing;
-using System.Drawing.Imaging;
 using WebServicesAnticiposNomina.Models.Class.Request;
 using WebServicesAnticiposNomina.Models.Class.Response;
 using WebServicesAnticiposNomina.Models.DataBase;
 using WebServicesAnticiposNomina.Models.DataBase.Utilities;
-using QRCoder;
 
 namespace WebServicesAnticiposNomina.Core
 {
@@ -84,7 +83,7 @@ namespace WebServicesAnticiposNomina.Core
                     if (dataUser.Rows[0]["state"].ToString() == "1")
                     {
                         if (!CreateContract(dataUser)) CreateContract(dataUser);
-                         
+
                         string bodyEmail = GetBodyEmailCode(dataUser);
                         utilities.SendEmail(dataUser.Rows[0]["email"].ToString(), "Anticipo generado", bodyEmail, true, _configuration["route:pathContrato"] + $"\\{dataUser.Rows[0]["id_anticipo"]}.pdf");
 
@@ -107,7 +106,40 @@ namespace WebServicesAnticiposNomina.Core
             }
             return responseModels;
         }
+        public ResponseModels PutStatudAdvance(AdvanceRequest advanceRequest, string Token)
+        {
+            ResponseModels responseModels = new();
+            try
+            {
+                SecurityCore securityCore = new(_configuration);
+                if (Token == _configuration["JwtSettings:SecretKeyAdmin"])
+                {
+                    AdvanceModel advanceModel = new(_configuration);
+                    Utilities utilities = new(_configuration);
+                    DataTable dataUser = advanceModel.PostAdvance(advanceRequest, 3);
+                    responseModels.MessageResponse = dataUser.Rows[0]["msg"].ToString();
 
+                    if (dataUser.Rows[0]["state"].ToString() == "1")
+                    {
+                        utilities.SendSms(dataUser.Rows[0]["celular"].ToString(), "Anticipo Aprovado");
+                        responseModels.CodeResponse = "201";
+                    }
+                    else
+                        responseModels.CodeResponse = "200";
+                }
+                else
+                {
+                    responseModels.MessageResponse = "Token expirado";
+                    responseModels.CodeResponse = "401";
+                }
+            }
+            catch (Exception)
+            {
+                responseModels.MessageResponse = "Error al envio de de codigo";
+                responseModels.CodeResponse = "500";
+            }
+            return responseModels;
+        }
         public bool CreateContract(DataTable dataTable)
         {
             string pathContract = _configuration["route:pathTemplace"] + $"\\{dataTable.Rows[0]["id_anticipo"]}.html";
@@ -153,7 +185,6 @@ namespace WebServicesAnticiposNomina.Core
                 throw;
             }
         }
-
         public bool GetHtmlContent(string pathContract, string? textContract, string base64Image, string base64Signature)
         {
             try
@@ -193,7 +224,6 @@ namespace WebServicesAnticiposNomina.Core
             }
             return body;
         }
-
         public string GenerateQRCode(string? text)
         {
             // generador de códigos QR
@@ -204,7 +234,7 @@ namespace WebServicesAnticiposNomina.Core
                 using (QRCode qrCode = new QRCode(qrCodeData))
                 {
                     // Obtiene la imagen del código QR con un tamaño de 20x20
-                    Bitmap qrCodeImage = qrCode.GetGraphic(20);                                      
+                    Bitmap qrCodeImage = qrCode.GetGraphic(20);
                     using (MemoryStream stream = new MemoryStream())
                     {
                         qrCodeImage.Save(stream, System.Drawing.Imaging.ImageFormat.Png);

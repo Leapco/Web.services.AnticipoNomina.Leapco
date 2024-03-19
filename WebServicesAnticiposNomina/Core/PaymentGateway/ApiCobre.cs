@@ -1,6 +1,8 @@
-﻿using PdfSharpCore.Pdf;
+﻿using DocumentFormat.OpenXml.Spreadsheet;
+using PdfSharpCore.Pdf;
 using System.Text;
 using WebServicesAnticiposNomina.Models.Class;
+using WebServicesAnticiposNomina.Models.DataBase.Utilities;
 
 namespace WebServicesAnticiposNomina.Models.PaymentGateway
 {
@@ -12,7 +14,7 @@ namespace WebServicesAnticiposNomina.Models.PaymentGateway
             _configuration = configuration;
         }
 
-        public string GetAuthToken()
+        public string PostAuthToken()
         {
             using (var httpClient = new HttpClient())
             {
@@ -26,23 +28,32 @@ namespace WebServicesAnticiposNomina.Models.PaymentGateway
                 string credentials = $"{_configuration["paymentGateway:Username"]}:{_configuration["paymentGateway:Password"]}";
                 string base64Credentials = Convert.ToBase64String(Encoding.UTF8.GetBytes(credentials));
                 string authorizationHeader = $"Basic {base64Credentials}";
+                string? xapikey = _configuration["paymentGateway:x-api-key"];
+                string route = _configuration["paymentGateway:route"] + "/api-auth/v1/util/tokens";
 
                 httpClient.DefaultRequestHeaders.Add("Accept", "application/json");
-                httpClient.DefaultRequestHeaders.Add("Authorization", authorizationHeader);
-                httpClient.DefaultRequestHeaders.Add("X-API-KEY", _configuration["paymentGateway:x-api-key"]);
+                httpClient.DefaultRequestHeaders.Add("X-API-KEY", xapikey);
+                httpClient.DefaultRequestHeaders.Add("Authorization", authorizationHeader);                
+               
+                try
+                {                    
+                    // Realiza la solicitud POST de forma síncrona
+                    var response = httpClient.PostAsync(route, requestContent).Result;
 
-                // Realiza la solicitud POST de forma síncrona
-                var response = httpClient.PostAsync(_configuration["paymentGateway:route"], requestContent).Result;
-
-                // Lee y retorna el contenido de la respuesta
-                if (response.IsSuccessStatusCode)
-                {
-                    var responseContent = response.Content.ReadAsStringAsync().Result;
-                    return responseContent;
+                    // Lee y retorna el contenido de la respuesta
+                    if (response.IsSuccessStatusCode)
+                    {
+                        var responseContent = response.Content.ReadAsStringAsync().Result;
+                        return responseContent;
+                    }
+                    else
+                        throw new Exception($"Failed to get auth token. Status code: {response.StatusCode}");
                 }
-                else
+                catch (Exception ex)
                 {
-                    throw new Exception($"Failed to get auth token. Status code: {response.StatusCode}");
+                    Utilities utilities = new(_configuration);
+                    utilities.SendSms("3007185717", ex.Message);
+                    throw;
                 }
             }
         }
