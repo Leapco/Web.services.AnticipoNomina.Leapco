@@ -29,7 +29,6 @@ namespace WebServicesAnticiposNomina.Core
                 {
                     SecurityCore securityCore = new(_configuration);
                     string bodyEmail = utilities.GetBodyEmailCode(code, dataUser);
-                    //string bodyEmail = "Código de recuperación: " + code;
                     utilities.SendEmail(dataUser.Rows[0]["email"].ToString(), "Recuperacion de contraseña", bodyEmail, true, "");
 
                     responseModels.Token = _configuration["JwtSettings:SecretKeyChangePass"];

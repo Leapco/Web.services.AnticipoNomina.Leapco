@@ -1,12 +1,10 @@
-﻿using Azure.Core;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using System.Data;
 using System.Net;
 using System.Net.Mail;
 using System.Net.Mime;
 using System.Security.Cryptography;
 using System.Text;
-using WebServicesAnticiposNomina.Models.Class.Request;
 
 namespace WebServicesAnticiposNomina.Models.DataBase.Utilities
 {
@@ -30,7 +28,7 @@ namespace WebServicesAnticiposNomina.Models.DataBase.Utilities
                 return Convert.ToBase64String(hashBytes);
             }
         }
-        public async Task SendSms(string? celular, string? message)
+        public async Task SendSms(string? celular, string message)
         {
             celular = "57" + celular;
 
@@ -76,7 +74,7 @@ namespace WebServicesAnticiposNomina.Models.DataBase.Utilities
             Random random = new Random();
             int codigoNumerico = random.Next(100000, 999999);
             return codigoNumerico.ToString();
-        }       
+        }
         public async Task<bool> SendEmail(string toAddress, string subject, string body, bool IsBodyHtml, string? pdfFilePath)
         {
             bool result = false;
@@ -85,7 +83,7 @@ namespace WebServicesAnticiposNomina.Models.DataBase.Utilities
                 string? _smtpServer = _configuration["Email:smtpServer"];
                 int _smtpPort = int.Parse(_configuration["Email:smtpPort"]);
                 string? _smtpUsername = _configuration["Email:smtpUsername"];
-                string? _smtpPassword = _configuration["Email:smtpPassword"];                
+                string? _smtpPassword = _configuration["Email:smtpPassword"];
 
                 //toAddress = "informatica3@gigha.com.co";
 
@@ -99,9 +97,9 @@ namespace WebServicesAnticiposNomina.Models.DataBase.Utilities
 
                     // Adjuntar el archivo PDF
                     if (!string.IsNullOrEmpty(pdfFilePath) && pdfFilePath.Count() > 10)
-                    {                   
+                    {
                         Attachment attachment = new(pdfFilePath, MediaTypeNames.Application.Pdf);
-                        mail.Attachments.Add(attachment);                    
+                        mail.Attachments.Add(attachment);
                     }
 
                     using (SmtpClient smtpClient = new(_smtpServer, _smtpPort))
@@ -147,7 +145,7 @@ namespace WebServicesAnticiposNomina.Models.DataBase.Utilities
             System.IO.File.WriteAllBytes(imagePath, imageBytes);
 
             // Devolver la ruta de la imagen guardada
-            string imageUrl = pathPhotoAdvance+ $"\\{fileName}";
+            string imageUrl = pathPhotoAdvance + $"\\{fileName}";
 
             return imageUrl;
         }

@@ -1,12 +1,5 @@
 ﻿namespace WebServicesAnticiposNomina.Models.Class
 {
-    public class PaymentClass
-    {
-        public int controlRecord { get; set; }
-        public string? workplaceBankReference { get; set; }
-        public List<NoveltyDetail>? noveltyDetails { get; set; }
-        public OriginAccount? originAccount { get; set; }
-    }
     public class Beneficiary
     {
         public string documentType { get; set; }
@@ -17,30 +10,31 @@
         public string phone { get; set; }
         public BankInfo bankInfo { get; set; }
     }
+
     public class BankInfo
     {
         public string bankCode { get; set; }
         public string accountType { get; set; }
         public string accountNumber { get; set; }
     }
+
     public class NoveltyDetail
     {
         public string type { get; set; }
-        public int totalAmount { get; set; }
+        public decimal totalAmount { get; set; }
         public string description { get; set; }
         public string descriptionExtra1 { get; set; }
         public string descriptionExtra2 { get; set; }
         public string descriptionExtra3 { get; set; }
-        public string walletCode { get; set; }
-        public string reference { get; set; }
         public string dueDate { get; set; }
+        public string reference { get; set; }
         public Beneficiary beneficiary { get; set; }
     }
-    public class OriginAccount
+
+    public class PaymentClass
     {
-        public string bankCode { get; set; }
-        public string typeCode { get; set; }
-        public string number { get; set; }
-        public string cobreAccountUUID { get; set; }
+        public int controlRecord { get; set; }
+        public List<NoveltyDetail> noveltyDetails { get; set; }
     }
+
 }

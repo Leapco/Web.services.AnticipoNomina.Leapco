@@ -2,7 +2,7 @@
 {
     public class AdvanceRequest
     {
-        public string? Base64Image { get; set; }
+        public string Base64Image { get; set; }
         public string? ID { get; set; }
         public string? AdvanceAmount { get; set; }
         public string? Code { get; set; }
