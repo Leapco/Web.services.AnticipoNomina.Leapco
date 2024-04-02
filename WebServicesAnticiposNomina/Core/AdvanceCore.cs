@@ -100,12 +100,12 @@ namespace WebServicesAnticiposNomina.Core
                                 advanceModel.PostAdvance(advanceRequest, 4);
                                 //"Transaccion registrada"
                                 bodyMessage = utilities.GetBodyEmailCode("", dataUser, 3);
-                                utilities.SendEmail(dataUser.Rows[0]["email"].ToString(), "Anticipo generado", bodyMessage, false, "");
+                                utilities.SendEmail(dataUser.Rows[0]["email"].ToString(), "Anticipo generado", bodyMessage, true, "");
                                 break;
                             case "204":
                                 //Faltas datos personales, llamar a la linea de atencion de JIRO.
                                 bodyMessage = utilities.GetBodyEmailCode("", dataUser, 2);
-                                utilities.SendEmail(dataUser.Rows[0]["email"].ToString(), "Anticipo Rechzado", bodyMessage, true, "");
+                                utilities.SendEmail(dataUser.Rows[0]["email"].ToString(), "Anticipo Rechazado", bodyMessage, true, "");
                                 advanceModel.PostAdvance(advanceRequest, 5);
                                 break;
                         }   

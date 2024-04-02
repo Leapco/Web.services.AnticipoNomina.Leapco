@@ -162,7 +162,6 @@ namespace WebServicesAnticiposNomina.Core
                    if (!advanceCore.CreateContract(dataUser)) advanceCore.CreateContract(dataUser);
 
                    string bodyEmail = this.GetBodyContract(dataUser);
-
                    var email =  utilities.SendEmail(dataUser.Rows[0]["email"].ToString(), "Anticipo generado", bodyEmail, true,
                                     _configuration["route:pathContrato"] + $"\\{dataUser.Rows[0]["id_anticipo"]}.pdf");
                    return "201";
@@ -174,8 +173,8 @@ namespace WebServicesAnticiposNomina.Core
                     string code = "200";
                     if (dataUser.Rows[0]["state"].ToString() == "1")
                     {
-                        utilities.SendEmail(dataUser.Rows[0]["email"].ToString(), "Anticipo generado", "Rechazado desde el banco", false, "");
-                        code = "201";
+                        utilities.SendEmail(dataUser.Rows[0]["email"].ToString(), "Anticipo rechazado", "Rechazado desde el banco", false, "");
+                        code = "204";
                     }
 
                     return code;
