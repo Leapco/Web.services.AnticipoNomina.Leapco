@@ -6,5 +6,6 @@
         public string? MessageResponse { get; set; } = string.Empty;
         public string? Token { get; set; }
         public string? Data { get; set; } = string.Empty;
+        public dynamic? DataApiCobre { get; set; }
     }
 }

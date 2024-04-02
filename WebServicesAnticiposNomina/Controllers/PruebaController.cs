@@ -126,28 +126,28 @@ namespace WebServicesAnticiposNomina.Controllers
         //}
 
 
-        [HttpPost]
-        public string Post(PaymentClass paymentClass)
-        {
-            string result = "";
-            try
-            {
-                ApiCobre apiCobre = new ApiCobre(_Configuration);
-                string Token = apiCobre.PostAuthToken(paymentClass);
-                int Balance = apiCobre.GetBalanceBank(Token);
+        //[HttpPost]
+        //public string Post(PaymentClass paymentClass)
+        //{
+        //    string result = "";
+        //    try
+        //    {
+        //        ApiCobre apiCobre = new ApiCobre(_Configuration);
+        //        string Token = apiCobre.PostAuthToken("");
+        //        int Balance = apiCobre.GetBalanceBank(Token);
 
-                if (Balance > 0)
-                {
-                    result = apiCobre.PostPayment(Token, paymentClass);
-                }
+        //        if (Balance > 0)
+        //        {
+        //            result = apiCobre.PostPayment(Token, paymentClass);
+        //        }
                 
-            }
-            catch (Exception)
-            {
-                result = "401";
-            }
-            return result;
-        }
+        //    }
+        //    catch (Exception)
+        //    {
+        //        result = "401";
+        //    }
+        //    return result;
+        //}
 
         //[HttpPost]
         //public string Post([FromHeader] string Token, [FromBody] PaymentClass paymentClass)
@@ -166,21 +166,21 @@ namespace WebServicesAnticiposNomina.Controllers
         //    return result;
         //}
 
-        [HttpPut]
-        public async Task<string> Put([FromHeader] string Token)
-        {
-            string result = "";
-            try
-            {
-                ApiCobre apiCobre = new ApiCobre(_Configuration);
+        //[HttpPut]
+        //public async Task<string> Put([FromHeader] string Token)
+        //{
+        //    string result = "";
+        //    try
+        //    {
+        //        ApiCobre apiCobre = new ApiCobre(_Configuration);
 
-                //result = apiCobre.PostPaymentAsync(Token);
-            }
-            catch (Exception)
-            {
-                result = "401";
-            }
-            return result;
-        }
+        //        //result = apiCobre.PostPaymentAsync(Token);
+        //    }
+        //    catch (Exception)
+        //    {
+        //        result = "401";
+        //    }
+        //    return result;
+        //}
     }
 }

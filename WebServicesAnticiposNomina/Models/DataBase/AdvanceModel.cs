@@ -25,6 +25,7 @@ namespace WebServicesAnticiposNomina.Models.DataBase
                     dbConnection.CreateParam("ID", AdvanceRequest.ID, DbType.String),
                     dbConnection.CreateParam("Code", AdvanceRequest.Code, DbType.String),
                     dbConnection.CreateParam("AdvanceAmount", AdvanceRequest.AdvanceAmount, DbType.String),
+                    dbConnection.CreateParam("uuid", AdvanceRequest.uuid, DbType.String),
                     dbConnection.CreateParam("Option", Option, DbType.Int64)
                 };
                 return dbConnection.GetDataTable("ProcesoAnticipo", parameters);

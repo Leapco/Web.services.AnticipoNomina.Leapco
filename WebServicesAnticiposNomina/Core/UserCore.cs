@@ -28,7 +28,7 @@ namespace WebServicesAnticiposNomina.Core
                 if (dataUser.Rows[0]["code"].ToString() == "1")
                 {
                     SecurityCore securityCore = new(_configuration);
-                    string bodyEmail = utilities.GetBodyEmailCode(code, dataUser);
+                    string bodyEmail = utilities.GetBodyEmailCode(code, dataUser,1);
                     utilities.SendEmail(dataUser.Rows[0]["email"].ToString(), "Recuperacion de contraseña", bodyEmail, true, "");
 
                     responseModels.Token = _configuration["JwtSettings:SecretKeyChangePass"];
@@ -94,12 +94,12 @@ namespace WebServicesAnticiposNomina.Core
                 if (dataUser.Rows[0]["code"].ToString() == "1")
                 {
                     SecurityCore securityCore = new(_configuration);
-                    string bodyMessage = utilities.GetBodyEmailCode(code, dataUser);
+                    string bodyMessage = utilities.GetBodyEmailCode(code, dataUser, 1);
 
                     if (activateUserResponse.Email.Count() > 5)
                         utilities.SendEmail(dataUser.Rows[0]["email"].ToString(), "Activar usuario", bodyMessage, true, "");
                     else
-                        utilities.SendSms(activateUserResponse.CellPhone, bodyMessage);
+                        utilities.SendSms(activateUserResponse.CellPhone, "Codigo de verificacion es: " + code);
 
                     responseModels.Token = securityCore.GenerateToken(activateUserResponse.ID, "");
                     responseModels.CodeResponse = "201";

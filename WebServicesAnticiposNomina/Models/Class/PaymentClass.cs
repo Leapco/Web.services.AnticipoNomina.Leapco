@@ -21,7 +21,7 @@
     public class NoveltyDetail
     {
         public string type { get; set; }
-        public decimal totalAmount { get; set; }
+        public int totalAmount { get; set; }
         public string description { get; set; }
         public string descriptionExtra1 { get; set; }
         public string descriptionExtra2 { get; set; }
@@ -34,7 +34,12 @@
     public class PaymentClass
     {
         public int controlRecord { get; set; }
-        public List<NoveltyDetail> noveltyDetails { get; set; }
+        public List<NoveltyDetail>? noveltyDetails { get; set; }
     }
-
+    public class ResponseCobre
+    {
+        public string code { get; set; }
+        public string Message { get; set; }
+        public string data { get; set; }
+    }
 }

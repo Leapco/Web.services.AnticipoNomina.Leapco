@@ -28,7 +28,7 @@ namespace WebServicesAnticiposNomina.Controllers
             }
             catch (Exception)
             {
-                result.CodeResponse = "401";
+                result.CodeResponse = "500";
                 return result;
             }
             

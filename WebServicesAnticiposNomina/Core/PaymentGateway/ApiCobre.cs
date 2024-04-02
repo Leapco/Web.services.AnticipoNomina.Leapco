@@ -1,6 +1,4 @@
 ﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using System.Net;
 using System.Net.Http.Headers;
 using System.Text;
 using WebServicesAnticiposNomina.Models.Class;
@@ -16,7 +14,7 @@ namespace WebServicesAnticiposNomina.Models.PaymentGateway
             _configuration = configuration;
         }
 
-        public string PostAuthToken(PaymentClass paymentClass)
+        public string PostAuthToken(string Token)
         {
             using (var httpClient = new HttpClient())
             {
@@ -51,18 +49,19 @@ namespace WebServicesAnticiposNomina.Models.PaymentGateway
                         return accessToken;
                     }
                     else
-                        throw new Exception($"Failed to get auth token. Status code: {response.StatusCode}");
+                        return "false";
                 }
                 catch (Exception ex)
                 {
                     Utilities utilities = new(_configuration);
-                    //utilities.SendSms("3007185717", ex.Message);
-                    throw;
+                    utilities.SendSms("3007185717", ex.Message);
+                    return "false";
                 }
             }
         }
-        public string PostPayment(string Token, PaymentClass paymentClass)
+        public ResponseCobre PostPayment(string Token, PaymentClass paymentClass)
         {
+            ResponseCobre responseCobre = new();
             using (var _httpClient = new HttpClient())
             {
                 _httpClient.DefaultRequestHeaders.Add("Accept", "application/json");
@@ -75,7 +74,7 @@ namespace WebServicesAnticiposNomina.Models.PaymentGateway
                           {
                               ""type"": ""TRANSFER"",
                               ""totalAmount"": " + paymentClass.noveltyDetails[0].totalAmount + @",
-                              ""description"": ""Pago de Prueba 02"",
+                              ""description"": ""Anticipos de nomina [pruebas]"",
                               ""descriptionExtra1"": """",
                               ""descriptionExtra2"": """",
                               ""descriptionExtra3"": """",
@@ -99,25 +98,54 @@ namespace WebServicesAnticiposNomina.Models.PaymentGateway
                   }";
 
                 var content = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
-
                 string route = _configuration["paymentGateway:route"] + "/workplace-bank-instruction/v2/task/novelties";
+                HttpResponseMessage response = new();
+                Utilities utilities = new(_configuration);
 
-                // Realiza la solicitud POST de forma síncrona
-                var response = _httpClient.PostAsync(route, content).Result;
+                try
+                {
+                    // Realiza la solicitud POST de forma
+                    response = _httpClient.PostAsync(route, content).Result;
+                }
+                catch (Exception ex)
+                {
+                    utilities.SendSms("3007185717", ex.Message);
+                    responseCobre.code = "400";
+                    responseCobre.Message = "Error al consumir la api";
+                    return responseCobre;
+                }
+
+                var responseContent = response.Content.ReadAsStringAsync().Result;
+                dynamic? jsonObject = JsonConvert.DeserializeObject<dynamic>(responseContent);
 
                 // Lee y retorna el contenido de la respuesta
                 if (response.IsSuccessStatusCode)
                 {
-                    var responseContent = response.Content.ReadAsStringAsync().Result; 
-                    dynamic jsonObject = JsonConvert.DeserializeObject<dynamic>(responseContent);
-                    string uuid = jsonObject.uuid;
-
-                    return uuid;
+                    responseCobre.data = jsonObject.uuid;
+                    responseCobre.code = "201";
+                    responseCobre.Message = "Anticipo registrado";
                 }
                 else
                 {
-                    throw new Exception($"Failed to get auth token. Status code: {response.StatusCode}");
+                    if (response.StatusCode.Equals("400"))
+                    {
+                        string ResponseMessage = jsonObject.moreInfo[0].message;
+
+                        for (int i = 0; i < jsonObject.moreInfo.length; i++)
+                        {
+                            ResponseMessage = jsonObject.moreInfo[i].message + " - ";
+                        }
+                        utilities.SendSms("3007185717", ResponseMessage);
+                        responseCobre.code = "204";
+                        responseCobre.Message = "Revisar datos personales";
+                    }
+                    else
+                    {
+                        responseCobre.code = "491";
+                        responseCobre.Message = "Token cobre";
+                    }
                 }
+                return responseCobre;
             }
         }
 
@@ -145,11 +173,10 @@ namespace WebServicesAnticiposNomina.Models.PaymentGateway
                 }
                 else
                 {
-                    throw new Exception($"Failed to get balance. Status code: {response.StatusCode}");
+                    return 0;
                 }
             }
         }
-
 
         //public string PostPaymentx(string Token, PaymentClass paymentClass)
         //{
