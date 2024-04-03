@@ -44,7 +44,7 @@ namespace WebServicesAnticiposNomina.Core
                             utilities.SendEmail(AdvanceRequest.Email, "Código anticipo", bodyMessage, true, "");
                         }
                         else
-                            utilities.SendSms(AdvanceRequest.CellPhone, $"Codigo de verificacion: {AdvanceRequest.Code}");
+                            utilities.SendSms(AdvanceRequest.CellPhone, $"Codigo para el anticipo es: {AdvanceRequest.Code}");
 
                         responseModels.Token = Token;
                         responseModels.CodeResponse = "201";

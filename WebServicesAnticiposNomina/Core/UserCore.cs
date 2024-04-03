@@ -99,7 +99,7 @@ namespace WebServicesAnticiposNomina.Core
                     if (activateUserResponse.Email.Count() > 5)
                         utilities.SendEmail(dataUser.Rows[0]["email"].ToString(), "Activar usuario", bodyMessage, true, "");
                     else
-                        utilities.SendSms(activateUserResponse.CellPhone, "Codigo de verificacion es: " + code);
+                        utilities.SendSms(activateUserResponse.CellPhone, "Codigo de activacion es: " + code);
 
                     responseModels.Token = securityCore.GenerateToken(activateUserResponse.ID, "");
                     responseModels.CodeResponse = "201";
