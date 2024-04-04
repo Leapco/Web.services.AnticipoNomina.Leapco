@@ -141,10 +141,8 @@ namespace WebServicesAnticiposNomina.Core
 
                     if (dataUser.Rows[0]["state"].ToString() == "1")
                     {
-                        // falta envio a cobre una vez se apruebe
-
                         utilities.SendSms(dataUser.Rows[0]["celular"].ToString(), "Anticipo Aprovado");
-                        responseModels.CodeResponse = "201";
+                        responseModels = PostAdvance(advanceRequest, Token);
                     }
                     else
                         responseModels.CodeResponse = "200";

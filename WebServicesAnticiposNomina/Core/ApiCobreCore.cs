@@ -159,17 +159,24 @@ namespace WebServicesAnticiposNomina.Core
                 if (transactionRequest.Status == "FINISHED")
                 {
                     DataTable dataUser = advanceModel.PostAdvance(advanceRequest, 6);
-
+                    if (dataUser.Rows[0]["state"].ToString() == "2")
+                    {
+                        return "205";
+                    }
                    if (!advanceCore.CreateContract(dataUser)) advanceCore.CreateContract(dataUser);
 
                     bodyEmail = utilities.GetBodyEmailCode("", dataUser, 5);
-                    var email =  utilities.SendEmail(dataUser.Rows[0]["email"].ToString(), "Anticipo Aprovado", bodyEmail, true,
+                    var email =  utilities.SendEmail(dataUser.Rows[0]["email"].ToString(), "Anticipo Aprobado", bodyEmail, true,
                                     _configuration["route:pathContrato"] + $"\\{dataUser.Rows[0]["id_anticipo"]}.pdf");
                    return "201";
                 }
                 else
                 {
                     DataTable dataUser = advanceModel.PostAdvance(advanceRequest, 7);
+                    if (dataUser.Rows[0]["state"].ToString() == "2")
+                    {
+                        return "205";
+                    }
                     //consultar el por que del rechazo
                     string code = "200";
                     if (dataUser.Rows[0]["state"].ToString() == "1")
