@@ -166,7 +166,7 @@ namespace WebServicesAnticiposNomina.Core
                    if (!advanceCore.CreateContract(dataUser)) advanceCore.CreateContract(dataUser);
 
                     bodyEmail = utilities.GetBodyEmailCode("", dataUser, 5);
-                    var email =  utilities.SendEmail(dataUser.Rows[0]["email"].ToString(), "Anticipo Aprobado", bodyEmail, true,
+                    var email =  utilities.SendEmail(dataUser.Rows[0]["email"].ToString(), "Anticipo consignado", bodyEmail, true,
                                     _configuration["route:pathContrato"] + $"\\{dataUser.Rows[0]["id_anticipo"]}.pdf");
                    return "201";
                 }

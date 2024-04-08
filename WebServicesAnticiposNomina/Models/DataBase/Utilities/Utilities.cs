@@ -174,8 +174,8 @@ namespace WebServicesAnticiposNomina.Models.DataBase.Utilities
                         break;
                     case 3:
                         icono = "check";
-                        accion = "aprobado";
-                        texto = $"Tu anticipo fue {accion} por el sistema o tu empleador.";
+                        accion = "generado";
+                        texto = $"Tu anticipo ha sido generado por el sistema o aprobado por tu empleador. En unos instantes estarás recibiendo la consignación de tu anticipo junto a su comprobante.";
                         break;
                     case 4:
                         icono = "exclamation";

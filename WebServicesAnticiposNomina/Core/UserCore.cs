@@ -40,7 +40,7 @@ namespace WebServicesAnticiposNomina.Core
             }
             catch (Exception)
             {
-                responseModels.MessageResponse = "Error al envio de de codigo";
+                responseModels.MessageResponse = "Error al envio de codigo";
                 responseModels.CodeResponse = "500";
             }
             return responseModels;
@@ -75,7 +75,7 @@ namespace WebServicesAnticiposNomina.Core
             }
             catch (Exception)
             {
-                responseModels.MessageResponse = "Error al envio de de codigo";
+                responseModels.MessageResponse = "Error al envio de codigo";
                 responseModels.CodeResponse = "500";
             }
             return responseModels;
@@ -110,7 +110,7 @@ namespace WebServicesAnticiposNomina.Core
             }
             catch (Exception)
             {
-                responseModels.MessageResponse = "Error al envio de de codigo";
+                responseModels.MessageResponse = "Error al envio de codigo";
                 responseModels.CodeResponse = "500";
             }
             return responseModels;
@@ -145,7 +145,7 @@ namespace WebServicesAnticiposNomina.Core
             }
             catch (Exception)
             {
-                responseModels.MessageResponse = "Error al envio de de codigo";
+                responseModels.MessageResponse = "Error al envio de codigo";
                 responseModels.CodeResponse = "500";
             }
             return responseModels;
