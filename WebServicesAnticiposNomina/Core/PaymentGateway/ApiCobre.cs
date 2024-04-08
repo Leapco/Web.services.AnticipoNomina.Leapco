@@ -79,18 +79,18 @@ namespace WebServicesAnticiposNomina.Models.PaymentGateway
                               ""descriptionExtra2"": """",
                               ""descriptionExtra3"": """",
                               ""dueDate"": """",
-                              ""reference"": """ + paymentClass.noveltyDetails[0].reference + @""",
+                              ""reference"": """ + paymentClass.noveltyDetails[0].reference.Trim() + @""",
                               ""beneficiary"": {
-                                  ""documentType"": """ + paymentClass.noveltyDetails[0].beneficiary.documentType + @""",
-                                  ""documentNumber"": """ + paymentClass.noveltyDetails[0].beneficiary.documentNumber + @""",
-                                  ""name"": """ + paymentClass.noveltyDetails[0].beneficiary.name + @""",
-                                  ""lastName"": """ + paymentClass.noveltyDetails[0].beneficiary.lastName + @""",
-                                  ""email"": """ + paymentClass.noveltyDetails[0].beneficiary.email + @""",
-                                  ""phone"": """ + paymentClass.noveltyDetails[0].beneficiary.phone + @""",
+                                  ""documentType"": """ + paymentClass.noveltyDetails[0].beneficiary.documentType.Trim() + @""",
+                                  ""documentNumber"": """ + paymentClass.noveltyDetails[0].beneficiary.documentNumber.Trim() + @""",
+                                  ""name"": """ + paymentClass.noveltyDetails[0].beneficiary.name.Trim() + @""",
+                                  ""lastName"": """ + paymentClass.noveltyDetails[0].beneficiary.lastName.Trim() + @""",
+                                  ""email"": """ + paymentClass.noveltyDetails[0].beneficiary.email.Trim() + @""",
+                                  ""phone"": """ + paymentClass.noveltyDetails[0].beneficiary.phone.Trim() + @""",
                                   ""bankInfo"": {
-                                      ""bankCode"": """ + paymentClass.noveltyDetails[0].beneficiary.bankInfo.bankCode + @""",
-                                      ""accountType"": """ + paymentClass.noveltyDetails[0].beneficiary.bankInfo.accountType + @""",
-                                      ""accountNumber"": """ + paymentClass.noveltyDetails[0].beneficiary.bankInfo.accountNumber + @"""
+                                      ""bankCode"": """ + paymentClass.noveltyDetails[0].beneficiary.bankInfo.bankCode.Trim() + @""",
+                                      ""accountType"": """ + paymentClass.noveltyDetails[0].beneficiary.bankInfo.accountType.Trim() + @""",
+                                      ""accountNumber"": """ + (paymentClass.noveltyDetails[0].beneficiary.bankInfo.accountNumber).Trim() + @"""
                                   }
                               }
                           }
@@ -141,8 +141,8 @@ namespace WebServicesAnticiposNomina.Models.PaymentGateway
                     }
                     else
                     {
-                        responseCobre.code = "491";
-                        responseCobre.Message = "Token cobre";
+                        responseCobre.code = response.StatusCode.ToString();
+                        responseCobre.Message = "Ha ocurrido un error al procesar tu pago, intentalo mas tarde.";
                     }
                 }
                 return responseCobre;
