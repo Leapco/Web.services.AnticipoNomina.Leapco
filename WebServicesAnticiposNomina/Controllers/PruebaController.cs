@@ -1,5 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using DocumentFormat.OpenXml.Spreadsheet;
+using Microsoft.AspNetCore.Mvc;
 using MimeKit;
+using System.Net.Http;
+using System.Text;
 using WebServicesAnticiposNomina.Models.Class;
 using WebServicesAnticiposNomina.Models.Class.Response;
 using WebServicesAnticiposNomina.Models.DataBase.Utilities;
@@ -15,6 +18,7 @@ namespace WebServicesAnticiposNomina.Controllers
     public class PruebaController : ControllerBase
     {
         public IConfiguration _Configuration;
+   
         public PruebaController(IConfiguration configuration)
         {
 
@@ -47,18 +51,42 @@ namespace WebServicesAnticiposNomina.Controllers
         //}
         // GET api/<PruebaController>/5
         //[HttpGet]
-        //public async Task<string> GetSendMail(string correo, string asunto, string body)
+        //public async Task<string> GetSms()
         //{
         //    Utilities utilities = new(_Configuration);
-        //    utilities.SendEmail(correo, asunto, body);    
+        //    utilities.SendSms("3007185717","hola soy yo");
         //    return "Email enviado";
+        //}
+
+        //[HttpPost]
+        //public async Task<IActionResult> SendSMS()
+        //{
+        //     HttpClient _httpClient = new HttpClient();
+        //    _httpClient.BaseAddress = new Uri("https://dashboard.360nrs.com/api/rest/sms");
+
+        //    var requestBody = "{ \"to\": [\"3007185717\"], \"from\": \"TEST\", \"message\": \"SMS text message\" }";
+        //    var content = new StringContent(requestBody, Encoding.UTF8, "application/json");
+
+        //    _httpClient.DefaultRequestHeaders.Add("Authorization", "Basic  " + Convert.ToBase64String(Encoding.UTF8.GetBytes($"{"JIROOTP"}:{"Gsms2024$$"}")));
+
+        //    var response = await _httpClient.PostAsync("", content);
+
+        //    if (response.IsSuccessStatusCode)
+        //    {
+        //        var responseContent = await response.Content.ReadAsStringAsync();
+        //        return Ok(responseContent);
+        //    }
+        //    else
+        //    {
+        //        return BadRequest("Failed to send SMS");
+        //    }
         //}
         //public IActionResult CreateDocument(string imagePath)
         //{
         //    var docPath = @"C:\\Users\\uinformatica6.GIGHA\\OneDrive - GIGHA SAS - JIRO SAS\\Documentos\\Dev\\archive\\contratostemplateContract.docx";
         //    var pdfPath = @"C:\\Users\\uinformatica6.GIGHA\\OneDrive - GIGHA SAS - JIRO SAS\\Documentos\\Dev\\archive\\contratostemplateContract.pdf";
 
-        //    using (WordprocessingDocument wordDocument = WordprocessingDocument.Create(docPath, WordprocessingDocumentType.Document))
+        //    using (WordprocessingDocument wordDocument = WordprocessingDocument.Create(docPath, WordprocessingDocumentType.Docume"nt))
         //    {
         //        MainDocumentPart mainPart = wordDocument.AddMainDocumentPart();
         //        mainPart.Document = new Document();
@@ -140,7 +168,7 @@ namespace WebServicesAnticiposNomina.Controllers
         //        {
         //            result = apiCobre.PostPayment(Token, paymentClass);
         //        }
-                
+
         //    }
         //    catch (Exception)
         //    {

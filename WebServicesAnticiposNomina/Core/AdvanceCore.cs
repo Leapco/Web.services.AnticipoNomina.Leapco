@@ -97,6 +97,7 @@ namespace WebServicesAnticiposNomina.Core
                                 break;
                             case "201":  
                                 advanceRequest.uuid = responseCobre.data;
+                                advanceRequest.AdvanceAmount = responseCobre.jsonRequest;
                                 advanceModel.PostAdvance(advanceRequest, 4);
                                 //"Transaccion registrada"
                                 bodyMessage = utilities.GetBodyEmailCode("", dataUser, 3);

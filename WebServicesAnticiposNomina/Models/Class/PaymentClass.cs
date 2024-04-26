@@ -41,5 +41,6 @@
         public string code { get; set; }
         public string Message { get; set; }
         public string data { get; set; }
+        public string jsonRequest { get; set; }
     }
 }

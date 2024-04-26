@@ -1,4 +1,5 @@
 ﻿using MimeKit.Encodings;
+using Newtonsoft.Json;
 using QRCoder;
 using System.Data;
 using System.Drawing;
@@ -152,6 +153,7 @@ namespace WebServicesAnticiposNomina.Core
             AdvanceModel advanceModel = new(_configuration);
             AdvanceRequest advanceRequest = new();
             advanceRequest.uuid = transactionRequest.NoveltyUuid;
+            advanceRequest.AdvanceAmount = JsonConvert.SerializeObject(transactionRequest);
             string bodyEmail;
 
             try

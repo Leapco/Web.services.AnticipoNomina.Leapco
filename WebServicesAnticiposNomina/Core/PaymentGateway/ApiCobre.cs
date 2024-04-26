@@ -104,7 +104,6 @@ namespace WebServicesAnticiposNomina.Models.PaymentGateway
 
                 try
                 {
-                    // Realiza la solicitud POST de forma
                     response = _httpClient.PostAsync(route, content).Result;
                 }
                 catch (Exception ex)
@@ -124,6 +123,7 @@ namespace WebServicesAnticiposNomina.Models.PaymentGateway
                     responseCobre.data = jsonObject.uuid;
                     responseCobre.code = "201";
                     responseCobre.Message = "Anticipo registrado";
+                    responseCobre.jsonRequest = jsonRequest;
                 }
                 else
                 {
