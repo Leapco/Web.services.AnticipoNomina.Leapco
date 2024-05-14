@@ -32,7 +32,6 @@ namespace WebServicesAnticiposNomina.Models.SQLServer
                 throw;
             }
         }
-
         public DataTable PostRecoveryCode(string UserId, string Code)
         {
             try

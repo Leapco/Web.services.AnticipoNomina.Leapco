@@ -1,7 +1,8 @@
 ﻿using Newtonsoft.Json;
-using System.Net.Http.Headers;
 using System.Text;
 using WebServicesAnticiposNomina.Models.Class;
+using WebServicesAnticiposNomina.Models.Class.Request;
+using WebServicesAnticiposNomina.Models.DataBase;
 using WebServicesAnticiposNomina.Models.DataBase.Utilities;
 
 namespace WebServicesAnticiposNomina.Models.PaymentGateway
@@ -16,6 +17,7 @@ namespace WebServicesAnticiposNomina.Models.PaymentGateway
 
         public string PostAuthToken(string Token)
         {
+            LogsModel logsModel = new LogsModel(_configuration);
             using (var httpClient = new HttpClient())
             {
                 // Configura los headers y datos para la solicitud POST
@@ -53,8 +55,13 @@ namespace WebServicesAnticiposNomina.Models.PaymentGateway
                 }
                 catch (Exception ex)
                 {
-                    Utilities utilities = new(_configuration);
-                    utilities.SendSms("3007185717", ex.Message);
+                    LogRequest logRequest = new LogRequest()
+                    {
+                        Origen = "PostAuthToken",
+                        Request_json = credentials,
+                        Observacion = "Autenticacion Cobre"
+                    };
+                    logsModel.PostLog(logRequest);
                     return "false";
                 }
             }
@@ -62,6 +69,13 @@ namespace WebServicesAnticiposNomina.Models.PaymentGateway
         public ResponseCobre PostPayment(string Token, PaymentClass paymentClass)
         {
             ResponseCobre responseCobre = new();
+            LogsModel logsModel = new LogsModel(_configuration);
+            LogRequest logRequest = new LogRequest()
+            {
+                Origen = "PostPayment",
+                Id_Anticipo = int.Parse(paymentClass.noveltyDetails[0].reference.Trim())
+            };            
+
             using (var _httpClient = new HttpClient())
             {
                 _httpClient.DefaultRequestHeaders.Add("Accept", "application/json");
@@ -108,7 +122,10 @@ namespace WebServicesAnticiposNomina.Models.PaymentGateway
                 }
                 catch (Exception ex)
                 {
-                    utilities.SendSms("3007185717", ex.Message);
+                    logRequest.Request_json = jsonRequest;
+                    logRequest.Observacion = ex.Message;
+                    logsModel.PostLog(logRequest);
+
                     responseCobre.code = "400";
                     responseCobre.Message = "Error al consumir la api";
                     return responseCobre;
@@ -135,9 +152,13 @@ namespace WebServicesAnticiposNomina.Models.PaymentGateway
                         {
                             ResponseMessage = jsonObject.moreInfo[i].message + " - ";
                         }
-                        utilities.SendSms("3007185717", ResponseMessage);
+                        string Message = "Revisar datos personales";
+                        logRequest.Request_json = ResponseMessage;
+                        logRequest.Observacion = Message;
+                        logsModel.PostLog(logRequest);
+
                         responseCobre.code = "204";
-                        responseCobre.Message = "Revisar datos personales";
+                        responseCobre.Message = Message;
                     }
                     else
                     {
@@ -151,6 +172,7 @@ namespace WebServicesAnticiposNomina.Models.PaymentGateway
 
         public int GetBalanceBank(string Token)
         {
+            LogsModel logsModel = new LogsModel(_configuration);
             using (var _httpClient = new HttpClient())
             {
                 _httpClient.DefaultRequestHeaders.Add("Accept", "application/json");
@@ -173,9 +195,16 @@ namespace WebServicesAnticiposNomina.Models.PaymentGateway
                 }
                 else
                 {
+                    LogRequest logRequest = new LogRequest()
+                    {
+                        Origen = "GetBalanceBank",
+                        Request_json = response.Content.ReadAsStringAsync().Result.ToString(),
+                        Observacion = "No hay saldo disponible en la pasarela de pago Cobre"
+                    };
+                    logsModel.PostLog(logRequest);
                     return 0;
                 }
             }
-        }        
+        }
     }
 }

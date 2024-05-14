@@ -5,6 +5,7 @@ using System.Net.Mail;
 using System.Net.Mime;
 using System.Security.Cryptography;
 using System.Text;
+using WebServicesAnticiposNomina.Models.Class.Request;
 
 namespace WebServicesAnticiposNomina.Models.DataBase.Utilities
 {
@@ -77,6 +78,7 @@ namespace WebServicesAnticiposNomina.Models.DataBase.Utilities
         }
         public async Task<bool> SendEmail(string toAddress, string subject, string body, bool IsBodyHtml, string? pdfFilePath)
         {
+            LogsModel logsModel = new LogsModel(_configuration);
             bool result = false;
             try
             {
@@ -84,8 +86,6 @@ namespace WebServicesAnticiposNomina.Models.DataBase.Utilities
                 int _smtpPort = int.Parse(_configuration["Email:smtpPort"]);
                 string? _smtpUsername = _configuration["Email:smtpUsername"];
                 string? _smtpPassword = _configuration["Email:smtpPassword"];
-
-                //toAddress = "informatica3@gigha.com.co";
 
                 using (MailMessage mail = new MailMessage())
                 {
@@ -101,7 +101,6 @@ namespace WebServicesAnticiposNomina.Models.DataBase.Utilities
                         Attachment attachment = new(pdfFilePath, MediaTypeNames.Application.Pdf);
                         mail.Attachments.Add(attachment);
                     }
-
                     using (SmtpClient smtpClient = new(_smtpServer, _smtpPort))
                     {
                         try
@@ -116,6 +115,13 @@ namespace WebServicesAnticiposNomina.Models.DataBase.Utilities
                         }
                         catch (Exception ex)
                         {
+                            LogRequest logRequest = new LogRequest()
+                            {
+                                Origen = "SendEmail",
+                                Request_json = $"Email = {toAddress}",
+                                Observacion = "No se envio en correo electronico"
+                            };
+                            logsModel.PostLog(logRequest);
                             await SendSms("3007185717", ex.Message);
                             result = false;
                         }

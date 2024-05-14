@@ -57,12 +57,7 @@ namespace WebServicesAnticiposNomina.Core
                             string msg = "No tiene saldo la plataforma";                            
                             responseModels.Message = msg;
                             responseModels.code = "200";
-                            utilities.SendSms("3007185717", msg);
                         }
-                    }
-                    else
-                    {
-                       utilities.SendSms("3007185717", "Error al crear token de cobre");
                     }
                 }
             }
