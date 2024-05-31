@@ -3,19 +3,18 @@ using System.Net;
 var builder = WebApplication.CreateBuilder(args);
 
 // SSL
-ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+///ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
 
 // Add services to the container.
 builder.Services.AddControllers();
 
-// Enable CORS
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAnyOrigin", builder =>
     {
-        builder.WithOrigins("http://10.100.10.21:3000", "http://localhost:3000")
-                .AllowAnyMethod()
-                .AllowAnyHeader();
+        builder.AllowAnyOrigin()
+               .AllowAnyMethod()
+               .AllowAnyHeader();
     });
 });
 

@@ -76,7 +76,7 @@ namespace WebServicesAnticiposNomina.Models.DataBase.Utilities
             int codigoNumerico = random.Next(100000, 999999);
             return codigoNumerico.ToString();
         }
-        public async Task<bool> SendEmail(string toAddress, string subject, string body, bool IsBodyHtml, string? pdfFilePath)
+        public async Task<bool> SendEmail(string? toAddress, string subject, string body, bool IsBodyHtml, string? pdfFilePath)
         {
             LogsModel logsModel = new LogsModel(_configuration);
             bool result = false;
