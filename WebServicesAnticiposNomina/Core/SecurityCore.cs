@@ -23,8 +23,7 @@ namespace WebServicesAnticiposNomina.Core
                 {
                     Subject = new ClaimsIdentity(new Claim[]
                     {
-                        new(ClaimTypes.Name, username),
-                        new(ClaimTypes.UserData, data)
+                        new(ClaimTypes.Name, username)
                     }),
                     Expires = DateTime.UtcNow.AddHours(1),
                     SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
@@ -40,11 +39,11 @@ namespace WebServicesAnticiposNomina.Core
                 return ($"Error: {ex.Message}");
             }
         }
-        public bool IsTokenValid(string token)
+        public (bool IsValid, ClaimsPrincipal ClaimsPrincipal) IsTokenValid(string token)
         {
             try
             {
-                if (string.IsNullOrEmpty(token)) return false;
+                if (string.IsNullOrEmpty(token)) return (false, null);
 
                 var key = new byte[32];
                 key = Encoding.UTF8.GetBytes(_configuration["JwtSettings:SecretKey"]);
@@ -63,13 +62,13 @@ namespace WebServicesAnticiposNomina.Core
                 var principal = tokenHandler.ValidateToken(token, validationParameters, out securityToken);
 
                 // Verificar la fecha de expiración
-                if (securityToken.ValidTo < DateTime.UtcNow) return false;
+                if (securityToken.ValidTo < DateTime.UtcNow) return (false, null);
 
-                return true;
+                return (true, principal);
             }
             catch (Exception)
             {
-                return false;
+                return (false, null);
             }
         }
     }

@@ -1,4 +1,7 @@
-﻿using System.Data;
+﻿using DocumentFormat.OpenXml.Office2010.Excel;
+using Newtonsoft.Json.Linq;
+using System.Data;
+using System.Security.Claims;
 using WebServicesAnticiposNomina.Models.Class.Request;
 using WebServicesAnticiposNomina.Models.Class.Response;
 using WebServicesAnticiposNomina.Models.DataBase.Utilities;
@@ -120,27 +123,31 @@ namespace WebServicesAnticiposNomina.Core
             ResponseModels responseModels = new();
             try
             {
-                SecurityCore securityCore1 = new(_configuration);
-                if (securityCore1.IsTokenValid(Token))
-                {
-                    UserModel userModel = new(_configuration);
-                    Utilities utilities = new(_configuration);
-                    UpdatePasswordRequest.NewPassword = utilities.GetSHA256(UpdatePasswordRequest.NewPassword);
-                    DataTable dataUser = userModel.PutPassword(UpdatePasswordRequest, 2);
-                    responseModels.MessageResponse = dataUser.Rows[0]["msg"].ToString();
+                responseModels.MessageResponse = "Token expirado";
+                responseModels.CodeResponse = "401";
 
-                    if (dataUser.Rows[0]["code"].ToString() == "1")
-                    {
-                        responseModels.Token = Token;
-                        responseModels.CodeResponse = "201";
-                    }
-                    else
-                        responseModels.CodeResponse = "200";
-                }
-                else
+                SecurityCore securityCore1 = new(_configuration);
+                var (isValid, claimsPrincipal) = securityCore1.IsTokenValid(Token);
+
+                if (isValid)
                 {
-                    responseModels.MessageResponse = "Token expirado";
-                    responseModels.CodeResponse = "401";
+                    var IDToken = claimsPrincipal.FindFirst(ClaimTypes.Name)?.Value;
+                    if (UpdatePasswordRequest.ID == IDToken)
+                    {
+                        UserModel userModel = new(_configuration);
+                        Utilities utilities = new(_configuration);
+                        UpdatePasswordRequest.NewPassword = utilities.GetSHA256(UpdatePasswordRequest.NewPassword);
+                        DataTable dataUser = userModel.PutPassword(UpdatePasswordRequest, 2);
+                        responseModels.MessageResponse = dataUser.Rows[0]["msg"].ToString();
+
+                        if (dataUser.Rows[0]["code"].ToString() == "1")
+                        {
+                            responseModels.Token = Token;
+                            responseModels.CodeResponse = "201";
+                        }
+                        else
+                            responseModels.CodeResponse = "200";
+                    }
                 }
             }
             catch (Exception)
@@ -155,28 +162,32 @@ namespace WebServicesAnticiposNomina.Core
             ResponseLoginModels responseModels = new();
             try
             {
+                responseModels.MessageResponse = "Token expirado";
+                responseModels.CodeResponse = "401";
+
                 SecurityCore securityCore1 = new(_configuration);
-                if (securityCore1.IsTokenValid(Token))
-                {
-                    UserModel userModel = new(_configuration);
-                    DataTable dataUser = userModel.GetDataGeneral(ID, 1);
-                    responseModels.MessageResponse = dataUser.Rows[0]["msg"].ToString();
+                var (isValid, claimsPrincipal) = securityCore1.IsTokenValid(Token);
 
-                    if (dataUser.Rows[0]["code"].ToString() == "1")
+                if (isValid)
+                {
+                    var IDToken = claimsPrincipal.FindFirst(ClaimTypes.Name)?.Value;
+                    if ( ID == IDToken)
                     {
-                        UtilitiesCore utilitiesCore = new();
+                        UserModel userModel = new(_configuration);
+                        DataTable dataUser = userModel.GetDataGeneral(ID, 1);
+                        responseModels.MessageResponse = dataUser.Rows[0]["msg"].ToString();
 
-                        responseModels.Token = Token;
-                        responseModels.CodeResponse = "200";
-                        responseModels.Data = utilitiesCore.GetDataUser(dataUser);
+                        if (dataUser.Rows[0]["code"].ToString() == "1")
+                        {
+                            UtilitiesCore utilitiesCore = new();
+
+                            responseModels.Token = Token;
+                            responseModels.CodeResponse = "200";
+                            responseModels.Data = utilitiesCore.GetDataUser(dataUser);
+                        }
+                        else
+                            responseModels.CodeResponse = "200";
                     }
-                    else
-                        responseModels.CodeResponse = "200";
-                }
-                else
-                {
-                    responseModels.MessageResponse = "Token expirado";
-                    responseModels.CodeResponse = "401";
                 }
             }
             catch (Exception)

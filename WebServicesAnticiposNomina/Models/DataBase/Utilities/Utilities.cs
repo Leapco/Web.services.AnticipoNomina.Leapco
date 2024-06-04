@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using Microsoft.Identity.Client.Platforms.Features.DesktopOs.Kerberos;
+using Newtonsoft.Json;
 using System.Data;
 using System.Net;
 using System.Net.Mail;
@@ -27,6 +28,36 @@ namespace WebServicesAnticiposNomina.Models.DataBase.Utilities
             {
                 byte[] hashBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(value));
                 return Convert.ToBase64String(hashBytes);
+            }
+        }
+        public (string Salt, string Hash) EncryptWithSalt(string input)
+        {
+            byte[] saltBytes = new byte[16];
+            using (var rng = new RNGCryptoServiceProvider())
+            {
+                rng.GetBytes(saltBytes);
+            }
+
+            string salt = Convert.ToBase64String(saltBytes);
+            string saltedInput = input + salt;
+
+            using (var sha256 = SHA256.Create())
+            {
+                byte[] hashBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(saltedInput));
+                string hash = Convert.ToBase64String(hashBytes);
+                return (salt, hash);
+            }
+        }
+
+        public static bool VerifyWithSalt(string input, string salt, string hash)
+        {
+            string saltedInput = input + salt;
+
+            using (var sha256 = SHA256.Create())
+            {
+                byte[] hashBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(saltedInput));
+                string newHash = Convert.ToBase64String(hashBytes);
+                return newHash == hash;
             }
         }
         public async Task SendSms(string? celular, string message)
@@ -61,6 +92,15 @@ namespace WebServicesAnticiposNomina.Models.DataBase.Utilities
                     }
                     else
                     {
+                        LogsModel logsModel = new LogsModel(_configuration);
+                        LogRequest logRequest = new LogRequest()
+                        {
+                            Origen = "SendSms",
+                            Request_json = response.ToString(),
+                            Observacion = "Revisar envio de correo"
+                        };
+                        logsModel.PostLog(logRequest);
+
                         Console.WriteLine($"Error: {response.StatusCode} - {response.ReasonPhrase}");
                     }
                 }

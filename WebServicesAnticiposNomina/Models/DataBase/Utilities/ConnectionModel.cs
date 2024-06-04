@@ -42,7 +42,6 @@ namespace WebServicesAnticiposNomina.Models.DataBase.Utilities
                         {
                             cmd.Parameters.Add(param);
                         }
-
                         using (SqlDataAdapter da = new(cmd))
                         {
                             da.Fill(DataSet);

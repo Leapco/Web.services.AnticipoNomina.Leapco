@@ -1,7 +1,9 @@
-﻿using QRCoder;
+﻿using DocumentFormat.OpenXml.Office2010.Excel;
+using QRCoder;
 using SelectPdf;
 using System.Data;
 using System.Drawing;
+using System.Security.Claims;
 using WebServicesAnticiposNomina.Models.Class;
 using WebServicesAnticiposNomina.Models.Class.Request;
 using WebServicesAnticiposNomina.Models.Class.Response;
@@ -24,39 +26,43 @@ namespace WebServicesAnticiposNomina.Core
             ResponseModels responseModels = new();
             try
             {
+                responseModels.MessageResponse = "Token expirado";
+                responseModels.CodeResponse = "401";
+
                 SecurityCore securityCore = new(_configuration);
-                if (securityCore.IsTokenValid(Token))
+                var (isValid, claimsPrincipal) = securityCore.IsTokenValid(Token);
+
+                if (isValid)
                 {
-                    AdvanceModel advanceModel = new(_configuration);
-                    Utilities utilities = new(_configuration);
-                    AdvanceRequest.Code = utilities.GenerarCodigo();
-                    DataTable dataUser = advanceModel.PostAdvance(AdvanceRequest, 1);
-                    responseModels.MessageResponse = dataUser.Rows[0]["msg"].ToString();
-
-                    if (dataUser.Rows[0]["state"].ToString() == "1")
+                    var IDToken = claimsPrincipal.FindFirst(ClaimTypes.Name)?.Value;
+                    if (AdvanceRequest.ID == IDToken)
                     {
-                        if (AdvanceRequest.Base64Image.Length > 6)
-                            utilities.SavePhoto(AdvanceRequest.Base64Image, int.Parse(dataUser.Rows[0]["id_anticipo"].ToString()));
+                        AdvanceModel advanceModel = new(_configuration);
+                        Utilities utilities = new(_configuration);
+                        AdvanceRequest.Code = utilities.GenerarCodigo();
+                        DataTable dataUser = advanceModel.PostAdvance(AdvanceRequest, 1);
+                        responseModels.MessageResponse = dataUser.Rows[0]["msg"].ToString();
 
-                        if (AdvanceRequest.Email.Count() > 6)
+                        if (dataUser.Rows[0]["state"].ToString() == "1")
                         {
-                            string bodyMessage = utilities.GetBodyEmailCode(AdvanceRequest.Code, dataUser, 1);
-                            utilities.SendEmail(AdvanceRequest.Email, "Código anticipo", bodyMessage, true, "");
+                            if (AdvanceRequest.Base64Image.Length > 6)
+                                utilities.SavePhoto(AdvanceRequest.Base64Image, int.Parse(dataUser.Rows[0]["id_anticipo"].ToString()));
+
+                            if (AdvanceRequest.Email.Count() > 6)
+                            {
+                                string bodyMessage = utilities.GetBodyEmailCode(AdvanceRequest.Code, dataUser, 1);
+                                utilities.SendEmail(AdvanceRequest.Email, "Código anticipo", bodyMessage, true, "");
+                            }
+                            else
+                                utilities.SendSms(AdvanceRequest.CellPhone, $"Codigo para el anticipo es: {AdvanceRequest.Code}");
+
+                            responseModels.Token = Token;
+                            responseModels.CodeResponse = "201";
+                            responseModels.Data = "{'codigo': '" + AdvanceRequest.Code + "', 'Email': '" + dataUser.Rows[0]["email"].ToString() + "'}";
                         }
                         else
-                            utilities.SendSms(AdvanceRequest.CellPhone, $"Codigo para el anticipo es: {AdvanceRequest.Code}");
-
-                        responseModels.Token = Token;
-                        responseModels.CodeResponse = "201";
-                        responseModels.Data = "{'codigo': '" + AdvanceRequest.Code + "', 'Email': '" + dataUser.Rows[0]["email"].ToString() + "'}";
+                            responseModels.CodeResponse = "200";
                     }
-                    else
-                        responseModels.CodeResponse = "200";
-                }
-                else
-                {
-                    responseModels.MessageResponse = "Token expirado";
-                    responseModels.CodeResponse = "401";
                 }
             }
             catch (Exception)
@@ -71,53 +77,57 @@ namespace WebServicesAnticiposNomina.Core
             ResponseModels responseModels = new();
             try
             {
+                responseModels.MessageResponse = "Token expirado";
+                responseModels.CodeResponse = "401";
+
                 SecurityCore securityCore = new(_configuration);
-                if (securityCore.IsTokenValid(Token))
-                {
-                    AdvanceModel advanceModel = new(_configuration);
-                    Utilities utilities = new(_configuration);
-                    DataTable dataUser = advanceModel.PostAdvance(advanceRequest, 2);
-                    responseModels.MessageResponse = dataUser.Rows[0]["msg"].ToString();
+                var (isValid, claimsPrincipal) = securityCore.IsTokenValid(Token);
 
-                    if (dataUser.Rows[0]["state"].ToString() == "1")
+                if (isValid)
+                {
+                    var IDToken = claimsPrincipal.FindFirst(ClaimTypes.Name)?.Value;
+                    if (advanceRequest.ID == IDToken)
                     {
-                        ApiCobreCore apiCobreCore = new(_configuration);
-                        ResponseCobre responseCobre = apiCobreCore.PostPaymentAdvance(dataUser, Token);
+                        AdvanceModel advanceModel = new(_configuration);
+                        Utilities utilities = new(_configuration);
+                        DataTable dataUser = advanceModel.PostAdvance(advanceRequest, 2);
+                        responseModels.MessageResponse = dataUser.Rows[0]["msg"].ToString();
 
-                        responseModels.CodeResponse ="201";
-                        responseModels.DataApiCobre = responseCobre;
-                        responseModels.Token = Token;
-                        string bodyMessage;
-                        switch (responseCobre.code)
+                        if (dataUser.Rows[0]["state"].ToString() == "1")
                         {
-                            case "200":
-                                //Pendiente por revision del administrador
-                                bodyMessage = utilities.GetBodyEmailCode("", dataUser, 4);
-                                utilities.SendEmail(dataUser.Rows[0]["email"].ToString(), "Anticipo Pendiete", bodyMessage, true, "");
-                                break;
-                            case "201":  
-                                advanceRequest.uuid = responseCobre.data;
-                                advanceRequest.AdvanceAmount = responseCobre.jsonRequest;
-                                advanceModel.PostAdvance(advanceRequest, 4);
-                                //"Transaccion registrada"
-                                bodyMessage = utilities.GetBodyEmailCode("", dataUser, 3);
-                                utilities.SendEmail(dataUser.Rows[0]["email"].ToString(), "Anticipo generado", bodyMessage, true, "");
-                                break;
-                            case "204":
-                                //Faltas datos personales, llamar a la linea de atencion de JIRO.
-                                bodyMessage = utilities.GetBodyEmailCode("", dataUser, 2);
-                                utilities.SendEmail(dataUser.Rows[0]["email"].ToString(), "Anticipo Rechazado", bodyMessage, true, "");
-                                advanceModel.PostAdvance(advanceRequest, 5);
-                                break;
-                        }   
-                       }
-                    else
-                        responseModels.CodeResponse = "200";
-                }
-                else
-                {
-                    responseModels.MessageResponse = "Token expirado";
-                    responseModels.CodeResponse = "401";
+                            ApiCobreCore apiCobreCore = new(_configuration);
+                            ResponseCobre responseCobre = apiCobreCore.PostPaymentAdvance(dataUser, Token);
+
+                            responseModels.CodeResponse = "201";
+                            responseModels.DataApiCobre = responseCobre;
+                            responseModels.Token = Token;
+                            string bodyMessage;
+                            switch (responseCobre.code)
+                            {
+                                case "200":
+                                    //Pendiente por revision del administrador
+                                    bodyMessage = utilities.GetBodyEmailCode("", dataUser, 4);
+                                    utilities.SendEmail(dataUser.Rows[0]["email"].ToString(), "Anticipo Pendiete", bodyMessage, true, "");
+                                    break;
+                                case "201":
+                                    advanceRequest.uuid = responseCobre.data;
+                                    advanceRequest.AdvanceAmount = responseCobre.jsonRequest;
+                                    advanceModel.PostAdvance(advanceRequest, 4);
+                                    //"Transaccion registrada"
+                                    bodyMessage = utilities.GetBodyEmailCode("", dataUser, 3);
+                                    utilities.SendEmail(dataUser.Rows[0]["email"].ToString(), "Anticipo generado", bodyMessage, true, "");
+                                    break;
+                                case "204":
+                                    //Faltas datos personales, llamar a la linea de atencion de JIRO.
+                                    bodyMessage = utilities.GetBodyEmailCode("", dataUser, 2);
+                                    utilities.SendEmail(dataUser.Rows[0]["email"].ToString(), "Anticipo Rechazado", bodyMessage, true, "");
+                                    advanceModel.PostAdvance(advanceRequest, 5);
+                                    break;
+                            }
+                        }
+                        else
+                            responseModels.CodeResponse = "200";
+                    }
                 }
             }
             catch (Exception)
