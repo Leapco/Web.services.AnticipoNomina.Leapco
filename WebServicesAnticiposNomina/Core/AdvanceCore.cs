@@ -1,5 +1,4 @@
-﻿using DocumentFormat.OpenXml.Office2010.Excel;
-using QRCoder;
+﻿using QRCoder;
 using SelectPdf;
 using System.Data;
 using System.Drawing;
@@ -58,7 +57,7 @@ namespace WebServicesAnticiposNomina.Core
 
                             responseModels.Token = Token;
                             responseModels.CodeResponse = "201";
-                            responseModels.Data = "{'codigo': '" + AdvanceRequest.Code + "', 'Email': '" + dataUser.Rows[0]["email"].ToString() + "'}";
+                            responseModels.Data = "{'codigo': '" + utilities.EncryptCode(AdvanceRequest.Code, 2) + "', 'Email': '" + dataUser.Rows[0]["email"].ToString() + "'}";
                         }
                         else
                             responseModels.CodeResponse = "200";
@@ -197,6 +196,7 @@ namespace WebServicesAnticiposNomina.Core
                 var htmlCode = File.ReadAllText(pathContract);
                 HtmlToPdf converter = new();
                 PdfDocument doc = converter.ConvertHtmlString(htmlCode);
+                doc.Security.UserPassword = dataTable.Rows[0]["Identificacion"].ToString();
                 byte[] data = doc.Save();
                 doc.Close();
 
@@ -206,8 +206,8 @@ namespace WebServicesAnticiposNomina.Core
                 File.WriteAllBytes(pathContractPdf, data);
 
                 // Elimino foto y contrato en html
-                //File.Delete(pathContract);
-                //File.Delete(pathImagenClient);
+                File.Delete(pathContract);
+                File.Delete(pathImagenClient);
 
                 return true;
             }
@@ -236,7 +236,7 @@ namespace WebServicesAnticiposNomina.Core
             {
                 throw;
             }
-        }        
+        }
         public string GenerateQRCode(string? text)
         {
             // generador de códigos QR
@@ -258,6 +258,76 @@ namespace WebServicesAnticiposNomina.Core
                     }
                 }
             }
+        }
+
+        public ResponseModels GetContract(GetContractRequest getContractRequest, string Token)
+        {
+            ResponseModels responseModels = new();
+            try
+            {
+                responseModels.MessageResponse = "Token expirado";
+                responseModels.CodeResponse = "401";
+
+                SecurityCore securityCore = new(_configuration);
+                var (isValid, claimsPrincipal) = securityCore.IsTokenValid(Token);
+
+                if (isValid)
+                {
+                    var IDToken = claimsPrincipal.FindFirst(ClaimTypes.Name)?.Value;
+                    if (getContractRequest.ID == IDToken)
+                    {
+                        AdvanceRequest advanceRequest = new AdvanceRequest()
+                        {
+                            ID = getContractRequest.ID,
+                            Code = getContractRequest.Id_Anticipo.ToString(),
+                        };
+                        AdvanceModel advanceModel = new(_configuration);
+                        DataTable dataUser = advanceModel.PostAdvance(advanceRequest, 8);
+                        responseModels.CodeResponse = "404";
+
+                        if (dataUser.Rows[0]["state"].ToString() == "1")
+                        {
+                            var (base64pdf, isvalidbase64) = FindContratc(getContractRequest);
+                            responseModels.Token = Token;
+
+                            if (isvalidbase64)
+                            {
+                                responseModels.CodeResponse = "200";
+                                responseModels.MessageResponse = "Contrato encontrado";
+                                responseModels.Data = base64pdf;
+                            }
+                            else
+                                responseModels.MessageResponse = base64pdf;
+                        }
+                        else
+                            responseModels.MessageResponse = "El Contrato aún no esta creado";
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                responseModels.CodeResponse = "404";
+                responseModels.MessageResponse = ex.Message;
+            }
+            return responseModels;
+        }
+
+        public (string, bool) FindContratc(GetContractRequest getContractRequest)
+        {
+            string pathClient = _configuration["route:pathContrato"] + "\\" + getContractRequest.Id_Anticipo + ".pdf";
+            string base64pdf;
+            bool bandera = false;
+            if (File.Exists(pathClient))
+            {
+                byte[] pdfBytes = System.IO.File.ReadAllBytes(pathClient);
+                base64pdf = Convert.ToBase64String(pdfBytes);
+                bandera = true;
+            }
+            else
+            {
+                base64pdf = "El Contrato aún no esta creado";
+            }
+            return (base64pdf, bandera);
         }
     }
 }

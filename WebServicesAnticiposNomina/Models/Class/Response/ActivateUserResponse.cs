@@ -1,4 +1,4 @@
-﻿namespace WebServicesAnticiposNomina.Models.Class.Request
+﻿namespace WebServicesAnticiposNomina.Models.Class.Response
 {
     public class ActivateUserResponse
     {

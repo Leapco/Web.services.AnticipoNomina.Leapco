@@ -1,6 +1,7 @@
 ﻿using DocumentFormat.OpenXml.Spreadsheet;
 using Microsoft.AspNetCore.Mvc;
 using MimeKit;
+using SixLabors.ImageSharp;
 using System.Net.Http;
 using System.Text;
 using WebServicesAnticiposNomina.Models.Class;
@@ -210,5 +211,21 @@ namespace WebServicesAnticiposNomina.Controllers
         //    }
         //    return result;
         //}
+        [HttpPut]
+        public async Task<string> Put([FromHeader] string codigo, int option)
+        {
+            string result = "";
+            try
+            {
+                Utilities utilities = new Utilities(_Configuration);
+
+                result = utilities.EncryptCode(codigo, option);
+            }
+            catch (Exception)
+            {
+                result = "401";
+            }
+            return result;
+        }
     }
 }

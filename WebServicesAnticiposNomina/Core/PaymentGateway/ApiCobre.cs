@@ -73,7 +73,7 @@ namespace WebServicesAnticiposNomina.Models.PaymentGateway
             LogRequest logRequest = new LogRequest()
             {
                 Origen = "PostPayment",
-                Id_Anticipo = int.Parse(paymentClass.noveltyDetails[0].reference.Trim())
+                Id_Anticipo = int.Parse(paymentClass.noveltyDetails[0].reference.Trim().Replace("Id_Anticipo - ", ""))
             };            
 
             using (var _httpClient = new HttpClient())
@@ -88,7 +88,7 @@ namespace WebServicesAnticiposNomina.Models.PaymentGateway
                           {
                               ""type"": ""TRANSFER"",
                               ""totalAmount"": " + paymentClass.noveltyDetails[0].totalAmount + @",
-                              ""description"": ""Anticipos de nomina [pruebas]"",
+                              ""description"": ""Anticipos de nomina"",
                               ""descriptionExtra1"": """",
                               ""descriptionExtra2"": """",
                               ""descriptionExtra3"": """",

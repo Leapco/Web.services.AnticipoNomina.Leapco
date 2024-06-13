@@ -25,6 +25,7 @@ namespace WebServicesAnticiposNomina.Core
                 UserModel userModel = new(_configuration);
                 Utilities utilities = new(_configuration);
                 string code = utilities.GenerarCodigo();
+
                 DataTable dataUser = userModel.PostRecoveryCode(ID, code);
                 responseModels.MessageResponse = dataUser.Rows[0]["msg"].ToString();
 
@@ -36,7 +37,7 @@ namespace WebServicesAnticiposNomina.Core
 
                     responseModels.Token = _configuration["JwtSettings:SecretKeyChangePass"];
                     responseModels.CodeResponse = "201";
-                    responseModels.Data = "{'codigo': '" + code + "'}";
+                    responseModels.Data = "{'codigo': '" + utilities.EncryptCode(code,1) + "'}";
                 }
                 else
                     responseModels.CodeResponse = "200";
@@ -106,7 +107,7 @@ namespace WebServicesAnticiposNomina.Core
 
                     responseModels.Token = securityCore.GenerateToken(activateUserResponse.ID, "");
                     responseModels.CodeResponse = "201";
-                    responseModels.Data = "{'codigo': '" + code + "', 'Email': '" + dataUser.Rows[0]["email"].ToString() + "'}";
+                    responseModels.Data = "{'codigo': '" + utilities.EncryptCode(code, 3) + "', 'Email': '" + dataUser.Rows[0]["email"].ToString() + "'}";
                 }
                 else
                     responseModels.CodeResponse = "200";

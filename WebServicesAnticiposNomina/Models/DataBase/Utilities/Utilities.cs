@@ -30,36 +30,25 @@ namespace WebServicesAnticiposNomina.Models.DataBase.Utilities
                 return Convert.ToBase64String(hashBytes);
             }
         }
-        public (string Salt, string Hash) EncryptWithSalt(string input)
+        public string EncryptCode(string input, int option)
         {
-            byte[] saltBytes = new byte[16];
-            using (var rng = new RNGCryptoServiceProvider())
-            {
-                rng.GetBytes(saltBytes);
-            }
-
-            string salt = Convert.ToBase64String(saltBytes);
-            string saltedInput = input + salt;
+            //Concatenar el input con el salt único
+            string saltedInput;
+            if (option == 1)
+                saltedInput = input + _configuration["JwtSettings:SaltChange"];
+            else
+                if (option == 2)
+                    saltedInput = input + _configuration["JwtSettings:SaltAdvance"];
+                else
+                    saltedInput = input + _configuration["JwtSettings:SaltActivate"];
 
             using (var sha256 = SHA256.Create())
             {
                 byte[] hashBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(saltedInput));
-                string hash = Convert.ToBase64String(hashBytes);
-                return (salt, hash);
+                return Convert.ToBase64String(hashBytes);
             }
         }
 
-        public static bool VerifyWithSalt(string input, string salt, string hash)
-        {
-            string saltedInput = input + salt;
-
-            using (var sha256 = SHA256.Create())
-            {
-                byte[] hashBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(saltedInput));
-                string newHash = Convert.ToBase64String(hashBytes);
-                return newHash == hash;
-            }
-        }
         public async Task SendSms(string? celular, string message)
         {
             celular = "57" + celular;
@@ -122,6 +111,7 @@ namespace WebServicesAnticiposNomina.Models.DataBase.Utilities
             bool result = false;
             try
             {
+                //toAddress = "informatica3@gigha.com.co";
                 string? _smtpServer = _configuration["Email:smtpServer"];
                 int _smtpPort = int.Parse(_configuration["Email:smtpPort"]);
                 string? _smtpUsername = _configuration["Email:smtpUsername"];
@@ -149,7 +139,7 @@ namespace WebServicesAnticiposNomina.Models.DataBase.Utilities
                             smtpClient.Credentials = new NetworkCredential(_smtpUsername, _smtpPassword);
                             smtpClient.EnableSsl = true;
                             smtpClient.Timeout = 90000; // 20 segundos
-
+                            
                             smtpClient.Send(mail);
                             result = true;
                         }

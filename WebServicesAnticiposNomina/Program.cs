@@ -4,7 +4,7 @@ using System.Net;
 var builder = WebApplication.CreateBuilder(args);
 
 // SSL
-// ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
 
 // Add services to the container.
 builder.Services.AddControllers();
