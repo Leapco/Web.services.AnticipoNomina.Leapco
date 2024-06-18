@@ -85,7 +85,7 @@ namespace WebServicesAnticiposNomina.Core
                 if (isValid)
                 {
                     var IDToken = claimsPrincipal.FindFirst(ClaimTypes.Name)?.Value;
-                    if (advanceRequest.ID == IDToken)
+                    if (advanceRequest.ID.Trim() == IDToken.Trim())
                     {
                         AdvanceModel advanceModel = new(_configuration);
                         Utilities utilities = new(_configuration);

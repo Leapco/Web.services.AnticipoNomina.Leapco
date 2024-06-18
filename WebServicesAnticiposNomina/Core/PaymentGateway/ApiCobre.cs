@@ -70,10 +70,11 @@ namespace WebServicesAnticiposNomina.Models.PaymentGateway
         {
             ResponseCobre responseCobre = new();
             LogsModel logsModel = new LogsModel(_configuration);
+            int Id_anticipo = int.Parse(paymentClass.noveltyDetails[0].reference.Trim().Replace("Id_Anticipo - ", ""));
             LogRequest logRequest = new LogRequest()
             {
                 Origen = "PostPayment",
-                Id_Anticipo = int.Parse(paymentClass.noveltyDetails[0].reference.Trim().Replace("Id_Anticipo - ", ""))
+                Id_Anticipo = Id_anticipo
             };            
 
             using (var _httpClient = new HttpClient())
@@ -81,6 +82,7 @@ namespace WebServicesAnticiposNomina.Models.PaymentGateway
                 _httpClient.DefaultRequestHeaders.Add("Accept", "application/json");
                 _httpClient.DefaultRequestHeaders.Add("X-API-KEY", _configuration["paymentGateway:x-api-key"]);
                 _httpClient.DefaultRequestHeaders.Add("X-APIGW-AUTH", Token);
+                _httpClient.DefaultRequestHeaders.Add("X-CORRELATION-ID", Id_anticipo.ToString());
 
                 var jsonRequest = @"{
                       ""controlRecord"": 1,

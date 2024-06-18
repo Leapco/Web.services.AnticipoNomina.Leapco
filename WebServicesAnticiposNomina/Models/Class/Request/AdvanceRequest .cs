@@ -9,5 +9,6 @@
         public string? Email { get; set; }
         public string? CellPhone { get; set; }
         public string? uuid { get; set; }
+        public string? DescriptionsCobre { get; set; }
     }
 }

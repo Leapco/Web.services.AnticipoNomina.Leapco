@@ -147,6 +147,7 @@ namespace WebServicesAnticiposNomina.Core
             AdvanceModel advanceModel = new(_configuration);
             AdvanceRequest advanceRequest = new();
             advanceRequest.uuid = transactionRequest.NoveltyUuid;
+            // campo dinamica, se envia toda la respuesta del weebhook
             advanceRequest.AdvanceAmount = JsonConvert.SerializeObject(transactionRequest);
             string bodyEmail;
 
@@ -168,6 +169,7 @@ namespace WebServicesAnticiposNomina.Core
                 }
                 else
                 {
+                    advanceRequest.DescriptionsCobre = transactionRequest.DescriptionStatus;
                     DataTable dataUser = advanceModel.PostAdvance(advanceRequest, 7);
                     if (dataUser.Rows[0]["state"].ToString() == "2")
                     {

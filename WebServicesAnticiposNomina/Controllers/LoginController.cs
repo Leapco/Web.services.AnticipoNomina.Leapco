@@ -26,9 +26,10 @@ namespace WebServicesAnticiposNomina.Controllers
                 result = loginCore.Login(loginRequest);
                 return result;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 result.CodeResponse = "500";
+                result.MessageResponse = ex.Message;
                 return result;
             }
             

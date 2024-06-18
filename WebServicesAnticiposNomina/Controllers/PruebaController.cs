@@ -27,29 +27,17 @@ namespace WebServicesAnticiposNomina.Controllers
 
         }
         //GET api/<PruebaController>/5
-        //[HttpGet]
-        //public async Task<string> Get(string celular)
-        //{
-        //    Utilities utilities = new(_Configuration);
-        //    //await utilities.SendSms(celular, "Mensaje de prueba...");
-        //    // utilities.SendEmail("informatica3@gigha.com.co", "Anticipo generado", "prueba", true, "");
+        [HttpGet]
+        public async Task<string> Get(string celular)
+        {
+            Utilities utilities = new(_Configuration);
+            await utilities.SendSms(celular, "Mensaje de prueba...");
 
-        //    var message = new MimeMessage();
-        //    message.From.Add(new MailboxAddress("joshua", "notificaciones@info.anticipodenomina.com.co"));
-        //    message.To.Add(new MailboxAddress("", "informatica3@gigha.com.co"));
-        //    message.Subject = "Prueba email";
+             //utilities.SendEmail("joshuatejada@hotmail.com", "Anticipo generado", "prueba", false, "");
 
-        //    using (var client = new SmtpClient())
-        //    {
-        //        await client.ConnectAsync("mail.info.anticipodenomina.com.co", 465, false);
-        //        await client.AuthenticateAsync("notificaciones@info.anticipodenomina.com.co", "infoadn2024$%");
-        //        await client.SendAsync(message);
-        //        await client.DisconnectAsync(true);
-        //    }
-
-
-        //    return "Mensaje enviado";
-        //}
+        
+            return "Mensaje enviado";
+        }
         // GET api/<PruebaController>/5
         //[HttpGet]
         //public async Task<string> GetSms()
@@ -211,21 +199,21 @@ namespace WebServicesAnticiposNomina.Controllers
         //    }
         //    return result;
         //}
-        [HttpPut]
-        public async Task<string> Put([FromHeader] string codigo, int option)
-        {
-            string result = "";
-            try
-            {
-                Utilities utilities = new Utilities(_Configuration);
+        //[HttpPut]
+        //public async Task<string> Put([FromHeader] string codigo, int option)
+        //{
+        //    string result = "";
+        //    try
+        //    {
+        //        Utilities utilities = new Utilities(_Configuration);
 
-                result = utilities.EncryptCode(codigo, option);
-            }
-            catch (Exception)
-            {
-                result = "401";
-            }
-            return result;
-        }
+        //        result = utilities.EncryptCode(codigo, option);
+        //    }
+        //    catch (Exception)
+        //    {
+        //        result = "401";
+        //    }
+        //    return result;
+        //}
     }
 }
