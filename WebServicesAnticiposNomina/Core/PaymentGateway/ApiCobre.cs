@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using System.Data;
 using System.Text;
 using WebServicesAnticiposNomina.Models.Class;
 using WebServicesAnticiposNomina.Models.Class.Request;
@@ -15,7 +16,7 @@ namespace WebServicesAnticiposNomina.Models.PaymentGateway
             _configuration = configuration;
         }
 
-        public string PostAuthToken(string Token)
+        public string PostAuthToken(string Token, DataTable dataUser)
         {
             LogsModel logsModel = new LogsModel(_configuration);
             using (var httpClient = new HttpClient())
@@ -23,16 +24,16 @@ namespace WebServicesAnticiposNomina.Models.PaymentGateway
                 // Configura los headers y datos para la solicitud POST
                 var requestContent = new FormUrlEncodedContent(new Dictionary<string, string>
                 {
-                    { "grant_type", _configuration["paymentGateway:grant_type"] }
+                    { "grant_type", dataUser.Rows[0]["x_api_key_cobre"].ToString() }
                 });
 
                 // Construye las credenciales en el formato correcto para la autenticación básica HTTP
-                string credentials = $"{_configuration["paymentGateway:Username"]}:{_configuration["paymentGateway:Password"]}";
+                //string credentials = $"{_configuration["paymentGateway:Username"]}:{_configuration["paymentGateway:Password"]}";
+                string credentials = $"{dataUser.Rows[0]["UserCobre"]}:{dataUser.Rows[0]["ClaveCobre"]}";
                 string base64Credentials = Convert.ToBase64String(Encoding.UTF8.GetBytes(credentials));
                 string authorizationHeader = $"Basic {base64Credentials}";
-                string? xapikey = _configuration["paymentGateway:x-api-key"];
+                string? xapikey = dataUser.Rows[0]["x_api_key_cobre"].ToString();
                 string route = _configuration["paymentGateway:route"] + "/api-auth/v1/util/tokens";
-
                 httpClient.DefaultRequestHeaders.Add("Accept", "application/json");
                 httpClient.DefaultRequestHeaders.Add("X-API-KEY", xapikey);
                 httpClient.DefaultRequestHeaders.Add("Authorization", authorizationHeader);

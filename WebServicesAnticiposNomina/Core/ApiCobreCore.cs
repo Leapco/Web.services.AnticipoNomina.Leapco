@@ -32,7 +32,7 @@ namespace WebServicesAnticiposNomina.Core
                 ApiCobre apiCobre = new(_configuration);
 
                 Utilities utilities = new(_configuration);
-                string TokenApi = apiCobre.PostAuthToken(Token);
+                string TokenApi = apiCobre.PostAuthToken(Token, dataUser);
                 if (TokenApi != "false")
                 {
                     int Balance = apiCobre.GetBalanceBank(TokenApi);
@@ -67,7 +67,7 @@ namespace WebServicesAnticiposNomina.Core
             }
             return responseModels;
         }
-        public PaymentClass PutPaymentClass(DataTable dataUser)
+        public PaymentClass? PutPaymentClass(DataTable dataUser)
         {            
             List<NoveltyDetail>? noveltyDetailList = new();
             NoveltyDetail? noveltyDetail = new();

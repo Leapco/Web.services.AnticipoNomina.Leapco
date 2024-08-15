@@ -28,10 +28,10 @@ namespace WebServicesAnticiposNomina.Controllers
         }
         //GET api/<PruebaController>/5
         [HttpGet]
-        public async Task<string> Get(string celular)
+        public async Task<string> Get(string celular, string mesaje)
         {
             Utilities utilities = new(_Configuration);
-            await utilities.SendSms(celular, "Mensaje de prueba...");
+            await utilities.SendSms(celular, mesaje);
 
              //utilities.SendEmail("joshuatejada@hotmail.com", "Anticipo generado", "prueba", false, "");
 
