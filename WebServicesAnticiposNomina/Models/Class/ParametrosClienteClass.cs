@@ -13,5 +13,6 @@
         public decimal monto_max { get; set; }
         public decimal dias_laborados_min { get; set; }
         public decimal monto_laborados_min { get; set; }
+        public bool tiempo { get; set; }
     }
 }

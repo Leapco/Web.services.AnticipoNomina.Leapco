@@ -3,6 +3,7 @@ using System.Data;
 using System.Text;
 using WebServicesAnticiposNomina.Models.Class;
 using WebServicesAnticiposNomina.Models.Class.Request;
+using WebServicesAnticiposNomina.Models.Class.Response;
 using WebServicesAnticiposNomina.Models.DataBase;
 using WebServicesAnticiposNomina.Models.DataBase.Utilities;
 
@@ -24,7 +25,7 @@ namespace WebServicesAnticiposNomina.Models.PaymentGateway
                 // Configura los headers y datos para la solicitud POST
                 var requestContent = new FormUrlEncodedContent(new Dictionary<string, string>
                 {
-                    { "grant_type", dataUser.Rows[0]["x_api_key_cobre"].ToString() }
+                    { "grant_type", _configuration["paymentGateway:grant_type"] }
                 });
 
                 // Construye las credenciales en el formato correcto para la autenticación básica HTTP
@@ -67,7 +68,7 @@ namespace WebServicesAnticiposNomina.Models.PaymentGateway
                 }
             }
         }
-        public ResponseCobre PostPayment(string Token, PaymentClass paymentClass)
+        public ResponseCobre PostPayment(string Token, PaymentClass paymentClass, DataTable dataUser)
         {
             ResponseCobre responseCobre = new();
             LogsModel logsModel = new LogsModel(_configuration);
@@ -81,7 +82,7 @@ namespace WebServicesAnticiposNomina.Models.PaymentGateway
             using (var _httpClient = new HttpClient())
             {
                 _httpClient.DefaultRequestHeaders.Add("Accept", "application/json");
-                _httpClient.DefaultRequestHeaders.Add("X-API-KEY", _configuration["paymentGateway:x-api-key"]);
+                _httpClient.DefaultRequestHeaders.Add("X-API-KEY", dataUser.Rows[0]["x_api_key_cobre"].ToString());
                 _httpClient.DefaultRequestHeaders.Add("X-APIGW-AUTH", Token);
                 _httpClient.DefaultRequestHeaders.Add("X-CORRELATION-ID", Id_anticipo.ToString());
 
@@ -173,13 +174,13 @@ namespace WebServicesAnticiposNomina.Models.PaymentGateway
             }
         }
 
-        public int GetBalanceBank(string Token)
+        public int GetBalanceBank(string Token, DataTable dataUser)
         {
             LogsModel logsModel = new LogsModel(_configuration);
             using (var _httpClient = new HttpClient())
             {
                 _httpClient.DefaultRequestHeaders.Add("Accept", "application/json");
-                _httpClient.DefaultRequestHeaders.Add("X-API-KEY", _configuration["paymentGateway:x-api-key"]);
+                _httpClient.DefaultRequestHeaders.Add("X-API-KEY", dataUser.Rows[0]["x_api_key_cobre"].ToString());
                 _httpClient.DefaultRequestHeaders.Add("X-APIGW-AUTH", Token);
 
                 string route = _configuration["paymentGateway:route"] + "/workplace-bank-account/v1/entity/workplace-bank-balance";

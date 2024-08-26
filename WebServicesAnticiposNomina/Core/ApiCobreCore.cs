@@ -35,14 +35,14 @@ namespace WebServicesAnticiposNomina.Core
                 string TokenApi = apiCobre.PostAuthToken(Token, dataUser);
                 if (TokenApi != "false")
                 {
-                    int Balance = apiCobre.GetBalanceBank(TokenApi);
+                    int Balance = apiCobre.GetBalanceBank(TokenApi, dataUser);
 
                     if (Balance > 0)
                     {
                         var paymant = PutPaymentClass(dataUser);
                         if (paymant != null)
                         {
-                            responseModels = apiCobre.PostPayment(TokenApi, paymant);
+                            responseModels = apiCobre.PostPayment(TokenApi, paymant, dataUser);
                         }
                         else
                         {
