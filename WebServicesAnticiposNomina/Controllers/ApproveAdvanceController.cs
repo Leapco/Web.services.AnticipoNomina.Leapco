@@ -3,8 +3,6 @@ using WebServicesAnticiposNomina.Core;
 using WebServicesAnticiposNomina.Models.Class.Request;
 using WebServicesAnticiposNomina.Models.Class.Response;
 
-// For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-
 namespace WebServicesAnticiposNomina.Controllers
 {
     [Route("api/[controller]")]
