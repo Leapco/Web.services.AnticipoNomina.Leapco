@@ -5,16 +5,16 @@ using WebServicesAnticiposNomina.Models.DataBase.Utilities;
 
 namespace WebServicesAnticiposNomina.Models.DataBase
 {
-    public class AdvanceModel
+    public class LogsModel
     {
         private ConnectionModel dbConnection;
         private readonly IConfiguration _configuration;
 
-        public AdvanceModel(IConfiguration configuration)
+        public LogsModel(IConfiguration configuration)
         {
             _configuration = configuration;
         }
-        public DataTable PostAdvance(AdvanceRequest AdvanceRequest, int Option)
+        public DataTable PostLog(LogRequest logRequest)
         {
             try
             {
@@ -22,12 +22,11 @@ namespace WebServicesAnticiposNomina.Models.DataBase
 
                 List<SqlParameter> parameters = new()
                 {
-                    dbConnection.CreateParam("ID", AdvanceRequest.ID, DbType.String),
-                    dbConnection.CreateParam("Code", AdvanceRequest.Code, DbType.String),
-                    dbConnection.CreateParam("AdvanceAmount", AdvanceRequest.AdvanceAmount, DbType.String),
-                    dbConnection.CreateParam("uuid", AdvanceRequest.uuid, DbType.String),
-                    dbConnection.CreateParam("DescriptionsCobre", AdvanceRequest.DescriptionsCobre, DbType.String),
-                    dbConnection.CreateParam("Option", Option, DbType.Int64)
+                    dbConnection.CreateParam("Id_Anticipo", logRequest.Id_Anticipo, DbType.Int64),
+                    dbConnection.CreateParam("Id_cliente", logRequest.Id_cliente, DbType.Int64),
+                    dbConnection.CreateParam("Observacion", logRequest.Observacion, DbType.String),
+                    dbConnection.CreateParam("Request_json", logRequest.Request_json, DbType.String),
+                    dbConnection.CreateParam("Origen", logRequest.Origen, DbType.Int64)
                 };
                 return dbConnection.GetDataTable("ProcesoAnticipo", parameters);
             }

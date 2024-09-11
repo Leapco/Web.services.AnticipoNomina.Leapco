@@ -1,13 +1,13 @@
-﻿using DocumentFormat.OpenXml.Vml;
+﻿using DocumentFormat.OpenXml.Spreadsheet;
 using Microsoft.AspNetCore.Mvc;
-using System.Net.Mail;
-using System.Runtime.InteropServices;
-using WebServicesAnticiposNomina.Models.Class.Request;
-using WebServicesAnticiposNomina.Models.DataBase.Utilities;
-using Word = Microsoft.Office.Interop.Word;
-using MailKit.Net.Smtp;
 using MimeKit;
-using DocumentFormat.OpenXml.EMMA;
+using SixLabors.ImageSharp;
+using System.Net.Http;
+using System.Text;
+using WebServicesAnticiposNomina.Models.Class;
+using WebServicesAnticiposNomina.Models.Class.Response;
+using WebServicesAnticiposNomina.Models.DataBase.Utilities;
+using WebServicesAnticiposNomina.Models.PaymentGateway;
 using SmtpClient = MailKit.Net.Smtp.SmtpClient;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -19,6 +19,7 @@ namespace WebServicesAnticiposNomina.Controllers
     public class PruebaController : ControllerBase
     {
         public IConfiguration _Configuration;
+   
         public PruebaController(IConfiguration configuration)
         {
 
@@ -27,42 +28,54 @@ namespace WebServicesAnticiposNomina.Controllers
         }
         //GET api/<PruebaController>/5
         [HttpGet]
-        public async Task<string> Get(string celular)
+        public async Task<string> Get(string celular, string mesaje)
         {
             Utilities utilities = new(_Configuration);
-            //await utilities.SendSms(celular, "Mensaje de prueba...");
-            utilities.SendEmail("informatica3@gigha.com.co", "Anticipo generado", "prueba", true, "");
+            await utilities.SendSms(celular, mesaje);
 
-                var message = new MimeMessage();
-                message.From.Add(new MailboxAddress("joshua", "notificaciones@info.anticipodenomina.com.co"));
-                message.To.Add(new MailboxAddress("", "informatica3@gigha.com.co"));
-                message.Subject = "Prueba email";
-                     
-                using (var client = new SmtpClient())
-                {
-                    await client.ConnectAsync("info.anticipodenomina.com.co", 587, false);
-                    await client.AuthenticateAsync("notificaciones@info.anticipodenomina.com.co", "infoadn2024$%");
-                    await client.SendAsync(message);
-                    await client.DisconnectAsync(true);
-                }
-            
+             //utilities.SendEmail("joshuatejada@hotmail.com", "Anticipo generado", "prueba", false, "");
 
+        
             return "Mensaje enviado";
         }
         // GET api/<PruebaController>/5
         //[HttpGet]
-        //public async Task<string> GetSendMail(string correo, string asunto, string body)
+        //public async Task<string> GetSms()
         //{
         //    Utilities utilities = new(_Configuration);
-        //    utilities.SendEmail(correo, asunto, body);    
+        //    utilities.SendSms("3007185717","hola soy yo");
         //    return "Email enviado";
+        //}
+
+        //[HttpPost]
+        //public async Task<IActionResult> SendSMS()
+        //{
+        //     HttpClient _httpClient = new HttpClient();
+        //    _httpClient.BaseAddress = new Uri("https://dashboard.360nrs.com/api/rest/sms");
+
+        //    var requestBody = "{ \"to\": [\"3007185717\"], \"from\": \"TEST\", \"message\": \"SMS text message\" }";
+        //    var content = new StringContent(requestBody, Encoding.UTF8, "application/json");
+
+        //    _httpClient.DefaultRequestHeaders.Add("Authorization", "Basic  " + Convert.ToBase64String(Encoding.UTF8.GetBytes($"{"JIROOTP"}:{"Gsms2024$$"}")));
+
+        //    var response = await _httpClient.PostAsync("", content);
+
+        //    if (response.IsSuccessStatusCode)
+        //    {
+        //        var responseContent = await response.Content.ReadAsStringAsync();
+        //        return Ok(responseContent);
+        //    }
+        //    else
+        //    {
+        //        return BadRequest("Failed to send SMS");
+        //    }
         //}
         //public IActionResult CreateDocument(string imagePath)
         //{
         //    var docPath = @"C:\\Users\\uinformatica6.GIGHA\\OneDrive - GIGHA SAS - JIRO SAS\\Documentos\\Dev\\archive\\contratostemplateContract.docx";
         //    var pdfPath = @"C:\\Users\\uinformatica6.GIGHA\\OneDrive - GIGHA SAS - JIRO SAS\\Documentos\\Dev\\archive\\contratostemplateContract.pdf";
 
-        //    using (WordprocessingDocument wordDocument = WordprocessingDocument.Create(docPath, WordprocessingDocumentType.Document))
+        //    using (WordprocessingDocument wordDocument = WordprocessingDocument.Create(docPath, WordprocessingDocumentType.Docume"nt))
         //    {
         //        MainDocumentPart mainPart = wordDocument.AddMainDocumentPart();
         //        mainPart.Document = new Document();
@@ -127,6 +140,80 @@ namespace WebServicesAnticiposNomina.Controllers
         //        }
         //    }
 
+        //}
+
+
+        //[HttpPost]
+        //public string Post(PaymentClass paymentClass)
+        //{
+        //    string result = "";
+        //    try
+        //    {
+        //        ApiCobre apiCobre = new ApiCobre(_Configuration);
+        //        string Token = apiCobre.PostAuthToken("");
+        //        int Balance = apiCobre.GetBalanceBank(Token);
+
+        //        if (Balance > 0)
+        //        {
+        //            result = apiCobre.PostPayment(Token, paymentClass);
+        //        }
+
+        //    }
+        //    catch (Exception)
+        //    {
+        //        result = "401";
+        //    }
+        //    return result;
+        //}
+
+        //[HttpPost]
+        //public string Post([FromHeader] string Token, [FromBody] PaymentClass paymentClass)
+        //{
+        //    string result = "";
+        //    try
+        //    {
+        //        ApiCobre apiCobre = new ApiCobre(_Configuration);
+
+        //        result = apiCobre.PostPayment(Token, paymentClass);
+        //    }
+        //    catch (Exception)
+        //    {
+        //        result = "401";
+        //    }
+        //    return result;
+        //}
+
+        //[HttpPut]
+        //public async Task<string> Put([FromHeader] string Token)
+        //{
+        //    string result = "";
+        //    try
+        //    {
+        //        ApiCobre apiCobre = new ApiCobre(_Configuration);
+
+        //        //result = apiCobre.PostPaymentAsync(Token);
+        //    }
+        //    catch (Exception)
+        //    {
+        //        result = "401";
+        //    }
+        //    return result;
+        //}
+        //[HttpPut]
+        //public async Task<string> Put([FromHeader] string codigo, int option)
+        //{
+        //    string result = "";
+        //    try
+        //    {
+        //        Utilities utilities = new Utilities(_Configuration);
+
+        //        result = utilities.EncryptCode(codigo, option);
+        //    }
+        //    catch (Exception)
+        //    {
+        //        result = "401";
+        //    }
+        //    return result;
         //}
     }
 }

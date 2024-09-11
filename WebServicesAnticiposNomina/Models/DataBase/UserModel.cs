@@ -1,6 +1,7 @@
 ﻿using Microsoft.Data.SqlClient;
 using System.Data;
 using WebServicesAnticiposNomina.Models.Class.Request;
+using WebServicesAnticiposNomina.Models.Class.Response;
 using WebServicesAnticiposNomina.Models.DataBase.Utilities;
 
 namespace WebServicesAnticiposNomina.Models.SQLServer
@@ -32,7 +33,6 @@ namespace WebServicesAnticiposNomina.Models.SQLServer
                 throw;
             }
         }
-
         public DataTable PostRecoveryCode(string UserId, string Code)
         {
             try
@@ -83,6 +83,24 @@ namespace WebServicesAnticiposNomina.Models.SQLServer
                     dbConnection.CreateParam("Code", Code, DbType.String)
                 };
                 return dbConnection.GetDataTable("ValidaEmpleadoCodigo", parameters);
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+        public DataTable GetDataGeneral(string ID, int Option)
+        {
+            try
+            {
+                dbConnection = new ConnectionModel(_configuration);
+
+                List<SqlParameter> parameters = new()
+                {
+                    dbConnection.CreateParam("ID", ID, DbType.String),
+                    dbConnection.CreateParam("Option", Option, DbType.Int16)
+                };
+                return dbConnection.GetDataTable("ConsultarDatosGenerales", parameters);
             }
             catch (Exception)
             {

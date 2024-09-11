@@ -32,8 +32,7 @@ namespace WebServicesAnticiposNomina.Controllers
             }
             return responseModels;
         }
-         
-        // PUT api/<AdvanceController>/5
+
         [HttpPut]
         public ResponseModels Put([FromHeader] string Token, [FromBody] AdvanceRequest advanceRequest)
         {

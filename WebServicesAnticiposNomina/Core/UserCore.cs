@@ -1,6 +1,7 @@
-﻿using System.Data;
-using System.Net.Mail;
-using System.Net;
+﻿using DocumentFormat.OpenXml.Office2010.Excel;
+using Newtonsoft.Json.Linq;
+using System.Data;
+using System.Security.Claims;
 using WebServicesAnticiposNomina.Models.Class.Request;
 using WebServicesAnticiposNomina.Models.Class.Response;
 using WebServicesAnticiposNomina.Models.DataBase.Utilities;
@@ -24,26 +25,26 @@ namespace WebServicesAnticiposNomina.Core
                 UserModel userModel = new(_configuration);
                 Utilities utilities = new(_configuration);
                 string code = utilities.GenerarCodigo();
+
                 DataTable dataUser = userModel.PostRecoveryCode(ID, code);
                 responseModels.MessageResponse = dataUser.Rows[0]["msg"].ToString();
 
                 if (dataUser.Rows[0]["code"].ToString() == "1")
                 {
                     SecurityCore securityCore = new(_configuration);
-                    string bodyEmail = utilities.GetBodyEmailCode(code, dataUser);
-                    //string bodyEmail = "Código de recuperación: " + code;
+                    string bodyEmail = utilities.GetBodyEmailCode(code, dataUser,1);
                     utilities.SendEmail(dataUser.Rows[0]["email"].ToString(), "Recuperacion de contraseña", bodyEmail, true, "");
 
-                    responseModels.Token = securityCore.GenerateToken(ID, "");
+                    responseModels.Token = _configuration["JwtSettings:SecretKeyChangePass"];
                     responseModels.CodeResponse = "201";
-                    responseModels.Data = "{'codigo': '" + code + "'}";
+                    responseModels.Data = "{'codigo': '" + utilities.EncryptCode(code,1) + "'}";
                 }
                 else
                     responseModels.CodeResponse = "200";
             }
             catch (Exception)
             {
-                responseModels.MessageResponse = "Error al envio de de codigo";
+                responseModels.MessageResponse = "Error al envio de codigo";
                 responseModels.CodeResponse = "500";
             }
             return responseModels;
@@ -54,7 +55,7 @@ namespace WebServicesAnticiposNomina.Core
             try
             {
                 SecurityCore securityCore1 = new(_configuration);
-                if (securityCore1.IsTokenValid(Token))
+                if (Token == _configuration["JwtSettings:SecretKeyChangePass"])
                 {
                     UserModel userModel = new(_configuration);
                     Utilities utilities = new(_configuration);
@@ -78,7 +79,7 @@ namespace WebServicesAnticiposNomina.Core
             }
             catch (Exception)
             {
-                responseModels.MessageResponse = "Error al envio de de codigo";
+                responseModels.MessageResponse = "Error al envio de codigo";
                 responseModels.CodeResponse = "500";
             }
             return responseModels;
@@ -97,23 +98,23 @@ namespace WebServicesAnticiposNomina.Core
                 if (dataUser.Rows[0]["code"].ToString() == "1")
                 {
                     SecurityCore securityCore = new(_configuration);
-                    string bodyMessage = utilities.GetBodyEmailCode(code, dataUser);
+                    string bodyMessage = utilities.GetBodyEmailCode(code, dataUser, 1);
 
                     if (activateUserResponse.Email.Count() > 5)
                         utilities.SendEmail(dataUser.Rows[0]["email"].ToString(), "Activar usuario", bodyMessage, true, "");
                     else
-                        utilities.SendSms(activateUserResponse.CellPhone, bodyMessage);
+                        utilities.SendSms(activateUserResponse.CellPhone, "Codigo de activacion es: " + code);
 
                     responseModels.Token = securityCore.GenerateToken(activateUserResponse.ID, "");
                     responseModels.CodeResponse = "201";
-                    responseModels.Data = "{'codigo': '" + code + "', 'Email': '" + dataUser.Rows[0]["email"].ToString() + "'}";
+                    responseModels.Data = "{'codigo': '" + utilities.EncryptCode(code, 3) + "', 'Email': '" + dataUser.Rows[0]["email"].ToString() + "'}";
                 }
                 else
                     responseModels.CodeResponse = "200";
             }
             catch (Exception)
             {
-                responseModels.MessageResponse = "Error al envio de de codigo";
+                responseModels.MessageResponse = "Error al envio de codigo";
                 responseModels.CodeResponse = "500";
             }
             return responseModels;
@@ -123,32 +124,76 @@ namespace WebServicesAnticiposNomina.Core
             ResponseModels responseModels = new();
             try
             {
-                SecurityCore securityCore1 = new(_configuration);
-                if (securityCore1.IsTokenValid(Token))
-                {
-                    UserModel userModel = new(_configuration);
-                    Utilities utilities = new(_configuration);
-                    UpdatePasswordRequest.NewPassword = utilities.GetSHA256(UpdatePasswordRequest.NewPassword);
-                    DataTable dataUser = userModel.PutPassword(UpdatePasswordRequest, 2);
-                    responseModels.MessageResponse = dataUser.Rows[0]["msg"].ToString();
+                responseModels.MessageResponse = "Token expirado";
+                responseModels.CodeResponse = "401";
 
-                    if (dataUser.Rows[0]["code"].ToString() == "1")
-                    {
-                        responseModels.Token = Token;
-                        responseModels.CodeResponse = "201";
-                    }
-                    else
-                        responseModels.CodeResponse = "200";
-                }
-                else
+                SecurityCore securityCore1 = new(_configuration);
+                var (isValid, claimsPrincipal) = securityCore1.IsTokenValid(Token);
+
+                if (isValid)
                 {
-                    responseModels.MessageResponse = "Token expirado";
-                    responseModels.CodeResponse = "401";
+                    var IDToken = claimsPrincipal.FindFirst(ClaimTypes.Name)?.Value;
+                    if (UpdatePasswordRequest.ID == IDToken)
+                    {
+                        UserModel userModel = new(_configuration);
+                        Utilities utilities = new(_configuration);
+                        UpdatePasswordRequest.NewPassword = utilities.GetSHA256(UpdatePasswordRequest.NewPassword);
+                        DataTable dataUser = userModel.PutPassword(UpdatePasswordRequest, 2);
+                        responseModels.MessageResponse = dataUser.Rows[0]["msg"].ToString();
+
+                        if (dataUser.Rows[0]["code"].ToString() == "1")
+                        {
+                            responseModels.Token = Token;
+                            responseModels.CodeResponse = "201";
+                        }
+                        else
+                            responseModels.CodeResponse = "200";
+                    }
                 }
             }
             catch (Exception)
             {
-                responseModels.MessageResponse = "Error al envio de de codigo";
+                responseModels.MessageResponse = "Error al envio de codigo";
+                responseModels.CodeResponse = "500";
+            }
+            return responseModels;
+        }
+        public ResponseLoginModels GetDataGeneral(string ID, int Option, string Token)
+        {
+            ResponseLoginModels responseModels = new();
+            try
+            {
+                responseModels.MessageResponse = "Token expirado";
+                responseModels.CodeResponse = "401";
+
+                SecurityCore securityCore1 = new(_configuration);
+                var (isValid, claimsPrincipal) = securityCore1.IsTokenValid(Token);
+
+                if (isValid)
+                {
+                    var IDToken = claimsPrincipal.FindFirst(ClaimTypes.Name)?.Value;
+                    if ( ID == IDToken)
+                    {
+                        UserModel userModel = new(_configuration);
+                        DataTable dataUser = userModel.GetDataGeneral(ID, 1);
+                        responseModels.MessageResponse = dataUser.Rows[0]["msg"].ToString();
+
+                        if (dataUser.Rows[0]["code"].ToString() == "1")
+                        {
+                            UtilitiesCore utilitiesCore = new();
+
+                            responseModels.Token = Token;
+                            responseModels.CodeResponse = "200";
+                            responseModels.Data = utilitiesCore.GetDataUser(dataUser);
+                        }
+                        else
+                            responseModels.CodeResponse = "200";
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                responseModels.MessageResponse = "Error al consultar.";
                 responseModels.CodeResponse = "500";
             }
             return responseModels;

@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Builder;
+using AspNetCoreRateLimit;
 using System.Net;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -9,19 +9,30 @@ ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
 // Add services to the container.
 builder.Services.AddControllers();
 
-// Enable CORS
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAnyOrigin", builder =>
     {
-        builder.WithOrigins("http://10.100.10.21:3000", "http://localhost:3000")
-                .AllowAnyMethod()
-                .AllowAnyHeader();
+        builder.AllowAnyOrigin()
+               .AllowAnyMethod()
+               .AllowAnyHeader();
     });
 });
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+// Configurar Rate Limiting
+builder.Services.AddOptions();
+builder.Services.AddMemoryCache();
+
+builder.Services.Configure<IpRateLimitOptions>(builder.Configuration.GetSection("IpRateLimiting"));
+builder.Services.AddSingleton<IRateLimitConfiguration, RateLimitConfiguration>();
+builder.Services.AddSingleton<IIpPolicyStore, MemoryCacheIpPolicyStore>();
+builder.Services.AddSingleton<IRateLimitCounterStore, MemoryCacheRateLimitCounterStore>();
+
+// Registrar IProcessingStrategy
+builder.Services.AddSingleton<IProcessingStrategy, AsyncKeyLockProcessingStrategy>();
 
 var app = builder.Build();
 
@@ -34,6 +45,9 @@ if (app.Environment.IsDevelopment())
 
 // Use CORS
 app.UseCors("AllowAnyOrigin");
+
+// Aplicar Rate Limiting Middleware
+app.UseIpRateLimiting();
 
 app.UseAuthorization();
 

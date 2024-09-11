@@ -10,5 +10,6 @@
         public string total_anticipo { get; set; }
         public string costo_operativo { get; set; }
         public string total { get; set; }
+        public string observacion { get; set; }
     }
 }
