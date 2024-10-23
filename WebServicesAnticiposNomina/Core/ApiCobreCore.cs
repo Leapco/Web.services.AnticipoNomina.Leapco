@@ -32,9 +32,11 @@ namespace WebServicesAnticiposNomina.Core
                 ApiCobre apiCobre = new(_configuration);
 
                 Utilities utilities = new(_configuration);
+                // autenticacion
                 string TokenApi = apiCobre.PostAuthToken(Token, dataUser);
                 if (TokenApi != "false")
                 {
+                    // Valance de la cuenta
                     int Balance = apiCobre.GetBalanceBank(TokenApi, dataUser);
 
                     if (Balance > 0)

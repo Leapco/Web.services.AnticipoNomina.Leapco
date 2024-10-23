@@ -64,9 +64,9 @@ namespace WebServicesAnticiposNomina.Core
                     }
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                responseModels.MessageResponse = "Error al envio de codigo";
+                responseModels.MessageResponse = "Error al envio de codigo - " + ex.Message;
                 responseModels.CodeResponse = "500";
             }
             return responseModels;
@@ -175,6 +175,7 @@ namespace WebServicesAnticiposNomina.Core
             string pathContract = _configuration["route:pathTemplace"] + $"\\{dataTable.Rows[0]["id_anticipo"]}.html";
             try
             {
+                //Elimar archivo en la ruta enviada
                 if (File.Exists(pathContract)) File.Delete(pathContract);
 
                 // creo el contrato base en html

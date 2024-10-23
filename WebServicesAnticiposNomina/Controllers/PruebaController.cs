@@ -1,10 +1,13 @@
 ﻿using DocumentFormat.OpenXml.Spreadsheet;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using MimeKit;
 using SixLabors.ImageSharp;
+using System.Data;
 using System.Net.Http;
 using System.Text;
 using WebServicesAnticiposNomina.Models.Class;
+using WebServicesAnticiposNomina.Models.Class.Request;
 using WebServicesAnticiposNomina.Models.Class.Response;
 using WebServicesAnticiposNomina.Models.DataBase.Utilities;
 using WebServicesAnticiposNomina.Models.PaymentGateway;
@@ -215,5 +218,22 @@ namespace WebServicesAnticiposNomina.Controllers
         //    }
         //    return result;
         //}
+
+        [HttpPost]
+        public string Post([FromBody] AdvanceRequest advanceRequest)
+        {
+            string result = "";
+            try
+            {
+                Utilities utilities = new(_Configuration);
+
+                utilities.SavePhoto(advanceRequest.Base64Image, 666);
+            }
+            catch (Exception ex)
+            {
+                return ex.Message;
+            }
+            return "imagen subida";
+        }
     }
 }
