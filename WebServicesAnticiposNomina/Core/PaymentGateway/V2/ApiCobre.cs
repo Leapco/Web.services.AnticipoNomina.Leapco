@@ -1,83 +1,31 @@
 ﻿using Newtonsoft.Json;
 using System.Data;
+using System.Net.Http.Headers;
 using System.Text;
 using WebServicesAnticiposNomina.Models.Class;
 using WebServicesAnticiposNomina.Models.Class.Request;
-using WebServicesAnticiposNomina.Models.Class.Response;
 using WebServicesAnticiposNomina.Models.DataBase;
 using WebServicesAnticiposNomina.Models.DataBase.Utilities;
 
 namespace WebServicesAnticiposNomina.Models.PaymentGateway
 {
-    public class ApiCobre_v2
+    public class ApiCobre_v3
     {
         private readonly IConfiguration _configuration;
-        public ApiCobre_v2(IConfiguration configuration)
+        public ApiCobre_v3(IConfiguration configuration)
         {
             _configuration = configuration;
-        }
-
-        public string PostAuthToken(string Token, DataTable dataUser)
-        {
-            LogsModel logsModel = new LogsModel(_configuration);
-            using (var httpClient = new HttpClient())
-            {
-                // Configura los headers y datos para la solicitud POST
-                var requestContent = new FormUrlEncodedContent(new Dictionary<string, string>
-                {
-                    { "grant_type", _configuration["paymentGateway:grant_type"] }
-                });
-
-                // Construye las credenciales en el formato correcto para la autenticación básica HTTP
-                //string credentials = $"{_configuration["paymentGateway:Username"]}:{_configuration["paymentGateway:Password"]}";
-                string credentials = $"{dataUser.Rows[0]["UserCobre"]}:{dataUser.Rows[0]["ClaveCobre"]}";
-                string base64Credentials = Convert.ToBase64String(Encoding.UTF8.GetBytes(credentials));
-                string authorizationHeader = $"Basic {base64Credentials}";
-                string? xapikey = dataUser.Rows[0]["x_api_key_cobre"].ToString();
-                string route = _configuration["paymentGateway:route"] + "/api-auth/v1/util/tokens";
-                httpClient.DefaultRequestHeaders.Add("Accept", "application/json");
-                httpClient.DefaultRequestHeaders.Add("X-API-KEY", xapikey);
-                httpClient.DefaultRequestHeaders.Add("Authorization", authorizationHeader);
-
-                try
-                {
-                    var response = httpClient.PostAsync(route, requestContent).Result;
-
-                    if (response.IsSuccessStatusCode)
-                    {
-                        var responseContent = response.Content.ReadAsStringAsync().Result;
-
-                        dynamic jsonObject = JsonConvert.DeserializeObject<dynamic>(responseContent);
-                        string accessToken = jsonObject.access_token;
-
-                        return accessToken;
-                    }
-                    else
-                        return "false";
-                }
-                catch (Exception ex)
-                {
-                    LogRequest logRequest = new LogRequest()
-                    {
-                        Origen = "PostAuthToken",
-                        Request_json = credentials,
-                        Observacion = "Autenticacion Cobre"
-                    };
-                    logsModel.PostLog(logRequest);
-                    return "false";
-                }
-            }
         }
         public ResponseCobre PostPayment(string Token, PaymentClass paymentClass, DataTable dataUser)
         {
             ResponseCobre responseCobre = new();
-            LogsModel logsModel = new LogsModel(_configuration);
+            LogsModel logsModel = new(_configuration);
             int Id_anticipo = int.Parse(paymentClass.noveltyDetails[0].reference.Trim().Replace("Id_Anticipo - ", ""));
             LogRequest logRequest = new LogRequest()
             {
                 Origen = "PostPayment",
                 Id_Anticipo = Id_anticipo
-            };            
+            };
 
             using (var _httpClient = new HttpClient())
             {
@@ -128,6 +76,7 @@ namespace WebServicesAnticiposNomina.Models.PaymentGateway
                 {
                     logRequest.Request_json = jsonRequest;
                     logRequest.Observacion = ex.Message;
+                    logRequest.Origen = logRequest.Origen + " Error";
                     logsModel.PostLog(logRequest);
 
                     responseCobre.code = "400";
@@ -173,41 +122,181 @@ namespace WebServicesAnticiposNomina.Models.PaymentGateway
                 return responseCobre;
             }
         }
-
-        public int GetBalanceBank(string Token, DataTable dataUser)
+        public string PostAuthToken(DataTable dataUser)
         {
-            LogsModel logsModel = new LogsModel(_configuration);
             using (var _httpClient = new HttpClient())
             {
-                _httpClient.DefaultRequestHeaders.Add("Accept", "application/json");
-                _httpClient.DefaultRequestHeaders.Add("X-API-KEY", dataUser.Rows[0]["x_api_key_cobre"].ToString());
-                _httpClient.DefaultRequestHeaders.Add("X-APIGW-AUTH", Token);
+                // Endpoint de la API de Cobre v3
+                var url = _configuration["paymentGateway:route"] + "/auth";
 
-                string route = _configuration["paymentGateway:route"] + "/workplace-bank-account/v1/entity/workplace-bank-balance";
-
-                // Realiza la solicitud GET de forma asíncrona
-                var response = _httpClient.GetAsync(route).Result;
-
-                if (response.IsSuccessStatusCode)
+                // Crear el objeto JSON para el cuerpo de la solicitud
+                var requestBody = new
                 {
-                    // Lee y retorna el contenido de la respuesta si la solicitud fue exitosa
-                    var responseContent = response.Content.ReadAsStringAsync().Result;
-                    dynamic jsonObject = JsonConvert.DeserializeObject<dynamic>(responseContent);
-                    int balance = jsonObject.balance;
+                    user_id = dataUser.Rows[0]["UserCobre"],
+                    secret = dataUser.Rows[0]["ClaveCobre"]
+                };
 
-                    return balance;
+                // Convertir el objeto a JSON
+                var jsonContent = JsonConvert.SerializeObject(requestBody);
+                var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
+
+                try
+                {
+                    // Hacer la solicitud POST
+                    var response = _httpClient.PostAsync(url, content).Result;
+                    if (response.IsSuccessStatusCode)
+                    {
+                        // Leer el contenido de la respuesta
+                        var responseBody = response.Content.ReadAsStringAsync().Result;
+                        dynamic jsonObject = JsonConvert.DeserializeObject<dynamic>(responseBody);
+                        string accessToken = jsonObject.access_token;
+
+                        return accessToken;
+                    }
+                    else
+                        return "false";
                 }
-                else
+                catch (Exception ex)
                 {
+                    LogsModel logsModel = new LogsModel(_configuration);
                     LogRequest logRequest = new LogRequest()
                     {
-                        Origen = "GetBalanceBank",
-                        Request_json = response.Content.ReadAsStringAsync().Result.ToString(),
-                        Observacion = "No hay saldo disponible en la pasarela de pago Cobre"
+                        Origen = "PostAuthToken",
+                        Request_json = "credentials", // Organizar credenciales de seccion 
+                        Observacion = $"Autenticacion Cobre v3 - " + ex.Message,
                     };
                     logsModel.PostLog(logRequest);
-                    return 0;
+                    return "false";
                 }
+            }
+        }
+        public string PostAuthToken_DEV()
+        {
+            using (var _httpClient = new HttpClient())
+            {
+                // Endpoint de la API de Cobre v3
+                var url = _configuration["paymentGateway:route"] + "/auth";
+
+                // Crear el objeto JSON para el cuerpo de la solicitud
+                var requestBody = new
+                {
+                    user_id = "cli_qqor9ztpcp_1",
+                    secret = "hn.uqyH?s5Yw0u"
+                };
+
+                // Convertir el objeto a JSON
+                var jsonContent = JsonConvert.SerializeObject(requestBody);
+                var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
+
+                try
+                {
+                    // Hacer la solicitud POST
+                    var response = _httpClient.PostAsync(url, content).Result;
+                    if (response.IsSuccessStatusCode)
+                    {
+                        // Leer el contenido de la respuesta
+                        var responseBody = response.Content.ReadAsStringAsync().Result;
+                        dynamic jsonObject = JsonConvert.DeserializeObject<dynamic>(responseBody);
+                        string accessToken = jsonObject.access_token;
+
+                        return accessToken;
+                    }
+                    else
+                        return "false";
+                }
+                catch (Exception ex)
+                {
+                    LogsModel logsModel = new LogsModel(_configuration);
+                    LogRequest logRequest = new LogRequest()
+                    {
+                        Origen = "PostAuthToken",
+                        Request_json = "credentials",
+                        Observacion = $"Autenticacion Cobre v3 - " + ex.Message,
+                    };
+                    logsModel.PostLog(logRequest);
+                    return "false";
+                }
+            }
+        }
+        public int GetBalanceBank(string Token_acces, DataTable dataUser)
+        {
+            LogsModel logsModel = new LogsModel(_configuration);
+            try
+            {
+                using (var _httpClient = new HttpClient())
+                {
+                    // Endpoint de la API de Cobre V3
+                    var url = _configuration["paymentGateway:route"] + "/accounts/" + dataUser.Rows[0]["x_api_key_cobre"].ToString();
+
+                    // Agregar el token de autorización
+                    _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", Token_acces);
+
+                    // Hacer la solicitud GET
+                    var response = _httpClient.GetAsync(url).Result;
+                    if (response.IsSuccessStatusCode)
+                    {
+                        var responseBody = response.Content.ReadAsStringAsync().Result;
+                        dynamic jsonObject = JsonConvert.DeserializeObject<dynamic>(responseBody);
+                        int balance = jsonObject.balance;
+                        return balance;
+                    }
+                    else
+                    {
+                        LogRequest logRequest = new LogRequest()
+                        {
+                            Origen = "GetBalanceBank",
+                            Request_json = response.Content.ReadAsStringAsync().Result.ToString(),
+                            Observacion = "No hay saldo disponible en la pasarela de pago Cobre"
+                        };
+                        logsModel.PostLog(logRequest);
+                        return 0;
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                return 0;
+            }
+        }
+        public int GetBalanceBank_DEV(string Token_acces)
+        {
+            LogsModel logsModel = new LogsModel(_configuration);
+            try
+            {
+                using (var _httpClient = new HttpClient())
+                {
+                    // Endpoint de la API de Cobre V3
+                    var url = _configuration["paymentGateway:route"] + "/accounts/acc_5ilrSi0jCu";
+
+                    // Agregar el token de autorización
+                    _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", Token_acces);
+
+                    // Hacer la solicitud GET
+                    var response = _httpClient.GetAsync(url).Result;
+                    if (response.IsSuccessStatusCode)
+                    {
+                        var responseBody = response.Content.ReadAsStringAsync().Result;
+                        dynamic jsonObject = JsonConvert.DeserializeObject<dynamic>(responseBody);
+                        int balance = jsonObject.balance;
+;
+                        return balance;
+                    }
+                    else
+                    {
+                        LogRequest logRequest = new LogRequest()
+                        {
+                            Origen = "GetBalanceBank",
+                            Request_json = response.Content.ReadAsStringAsync().Result.ToString(),
+                            Observacion = "No hay saldo disponible en la pasarela de pago Cobre"
+                        };
+                        logsModel.PostLog(logRequest);
+                        return 0;
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                return 0;
             }
         }
     }

@@ -20,7 +20,7 @@ namespace WebServicesAnticiposNomina.Core
             _configuration = configuration;
         }
 
-        public ResponseCobre PostPaymentAdvance(DataTable dataUser, string Token)
+        public ResponseCobre PostPaymentAdvance(DataTable dataUser)
         {
             ResponseCobre responseModels = new();
             try
@@ -29,11 +29,11 @@ namespace WebServicesAnticiposNomina.Core
                 responseModels.code = "401";
 
                 SecurityCore securityCore = new(_configuration);
-                ApiCobre apiCobre = new(_configuration);
+                ApiCobre_v3 apiCobre = new(_configuration);
 
                 Utilities utilities = new(_configuration);
                 // autenticacion
-                string TokenApi = apiCobre.PostAuthToken(Token, dataUser);
+                string TokenApi = apiCobre.PostAuthToken(dataUser);
                 if (TokenApi != "false")
                 {
                     // Valance de la cuenta
@@ -44,7 +44,22 @@ namespace WebServicesAnticiposNomina.Core
                         var paymant = PutPaymentClass(dataUser);
                         if (paymant != null)
                         {
-                            responseModels = apiCobre.PostPayment(TokenApi, paymant, dataUser);
+                            try
+                            {
+                                responseModels = apiCobre.PostPayment(TokenApi, paymant, dataUser);
+                            }
+                            catch (Exception)
+                            {
+                                LogsModel logsModel = new LogsModel(_configuration);
+                                LogRequest logRequest = new LogRequest()
+                                {
+                                    Origen = "PostPayment - error",
+                                    Request_json = paymant.noveltyDetails[0].beneficiary.name.Trim(), // Organizar credenciales de seccion 
+                                    Observacion = "Eror al registrar la transaccion en cobre",
+                                };
+                                logsModel.PostLog(logRequest);
+                                throw;
+                            }
                         }
                         else
                         {

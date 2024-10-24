@@ -29,18 +29,28 @@ namespace WebServicesAnticiposNomina.Controllers
             _Configuration = configuration;
 
         }
-        //GET api/<PruebaController>/5
-        [HttpGet]
-        public async Task<string> Get(string celular, string mesaje)
+        [HttpPost]
+        public string ADVANCE()
         {
-            Utilities utilities = new(_Configuration);
-            await utilities.SendSms(celular, mesaje);
+            ApiCobre_v3 apiCobre_V3 = new ApiCobre_v3(_Configuration);
 
-             //utilities.SendEmail("joshuatejada@hotmail.com", "Anticipo generado", "prueba", false, "");
+            string TOKEN_ACCES = apiCobre_V3.PostAuthToken_DEV();
+            int balance = apiCobre_V3.GetBalanceBank_DEV(TOKEN_ACCES);
+
+            return $"valor de la cuenta de jiro : {balance}";
+        }
+        ////GET api/<PruebaController>/5
+        //[HttpGet]
+        //public async Task<string> Get(string celular, string mesaje)
+        //{
+        //    Utilities utilities = new(_Configuration);
+        //    await utilities.SendSms(celular, mesaje);
+
+        //     //utilities.SendEmail("joshuatejada@hotmail.com", "Anticipo generado", "prueba", false, "");
 
         
-            return "Mensaje enviado";
-        }
+        //    return "Mensaje enviado";
+        //}
         // GET api/<PruebaController>/5
         //[HttpGet]
         //public async Task<string> GetSms()
@@ -219,21 +229,21 @@ namespace WebServicesAnticiposNomina.Controllers
         //    return result;
         //}
 
-        [HttpPost]
-        public string Post([FromBody] AdvanceRequest advanceRequest)
-        {
-            string result = "";
-            try
-            {
-                Utilities utilities = new(_Configuration);
+        //[HttpPost]
+        //public string Post([FromBody] AdvanceRequest advanceRequest)
+        //{
+        //    string result = "";
+        //    try
+        //    {
+        //        Utilities utilities = new(_Configuration);
 
-                utilities.SavePhoto(advanceRequest.Base64Image, 666);
-            }
-            catch (Exception ex)
-            {
-                return ex.Message;
-            }
-            return "imagen subida";
-        }
+        //        utilities.SavePhoto(advanceRequest.Base64Image, 666);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return ex.Message;
+        //    }
+        //    return "imagen subida";
+        //}
     }
 }

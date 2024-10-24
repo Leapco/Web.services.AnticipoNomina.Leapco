@@ -95,7 +95,7 @@ namespace WebServicesAnticiposNomina.Core
                         if (dataUser.Rows[0]["state"].ToString() == "1")
                         {
                             ApiCobreCore apiCobreCore = new(_configuration);
-                            ResponseCobre responseCobre = apiCobreCore.PostPaymentAdvance(dataUser, Token);
+                            ResponseCobre responseCobre = apiCobreCore.PostPaymentAdvance(dataUser);
 
                             responseModels.CodeResponse = "201";
                             responseModels.DataApiCobre = responseCobre;
