@@ -9,6 +9,7 @@ using System.Text;
 using WebServicesAnticiposNomina.Models.Class;
 using WebServicesAnticiposNomina.Models.Class.Request;
 using WebServicesAnticiposNomina.Models.Class.Response;
+using WebServicesAnticiposNomina.Models.DataBase;
 using WebServicesAnticiposNomina.Models.DataBase.Utilities;
 using WebServicesAnticiposNomina.Models.PaymentGateway;
 using SmtpClient = MailKit.Net.Smtp.SmtpClient;
@@ -30,14 +31,24 @@ namespace WebServicesAnticiposNomina.Controllers
 
         }
         [HttpPost]
-        public string ADVANCE()
+        public string ADVANCE(AdvanceRequest advanceRequest)
         {
             ApiCobre_v3 apiCobre_V3 = new ApiCobre_v3(_Configuration);
 
             string TOKEN_ACCES = apiCobre_V3.PostAuthToken_DEV();
-            int balance = apiCobre_V3.GetBalanceBank_DEV(TOKEN_ACCES);
 
-            return $"valor de la cuenta de jiro : {balance}";
+            var a = apiCobre_V3.GetCounterPartyID(TOKEN_ACCES, "cp_flRX11JLRj");
+
+
+
+            //AdvanceModel advanceModel = new(_Configuration);
+            //DataTable dataUser = advanceModel.PostAdvance(advanceRequest, 2);
+            //string destination_id = apiCobre_V3.PostCounterParty(TOKEN_ACCES, dataUser);
+            //advanceRequest.uuid = destination_id;
+            //dataUser = advanceModel.PostAdvance(advanceRequest, 9);
+            //int balance = apiCobre_V3.GetBalanceBank_DEV(TOKEN_ACCES);
+
+            return $"valor de la cuenta de jiro : ";
         }
         ////GET api/<PruebaController>/5
         //[HttpGet]

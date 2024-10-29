@@ -89,43 +89,58 @@ namespace WebServicesAnticiposNomina.Core
                     {
                         AdvanceModel advanceModel = new(_configuration);
                         Utilities utilities = new(_configuration);
-                        DataTable dataUser = advanceModel.PostAdvance(advanceRequest, 2);
-                        responseModels.MessageResponse = dataUser.Rows[0]["msg"].ToString();
-
-                        if (dataUser.Rows[0]["state"].ToString() == "1")
+                        try
                         {
-                            ApiCobreCore apiCobreCore = new(_configuration);
-                            ResponseCobre responseCobre = apiCobreCore.PostPaymentAdvance(dataUser);
+                            DataTable dataUser = advanceModel.PostAdvance(advanceRequest, 2);
+                            responseModels.MessageResponse = dataUser.Rows[0]["msg"].ToString();
 
-                            responseModels.CodeResponse = "201";
-                            responseModels.DataApiCobre = responseCobre;
-                            responseModels.Token = Token;
-                            string bodyMessage;
-                            switch (responseCobre.code)
+                            if (dataUser.Rows[0]["state"].ToString() == "1")
                             {
-                                case "200":
-                                    //Pendiente por revision del administrador
-                                    bodyMessage = utilities.GetBodyEmailCode("", dataUser, 4);
-                                    utilities.SendEmail(dataUser.Rows[0]["email"].ToString(), "Anticipo Pendiete", bodyMessage, true, "");
+                                ApiCobreCore apiCobreCore = new(_configuration);
+                                ResponseCobre responseCobre = apiCobreCore.PostPaymentAdvance(dataUser);
+
+                                responseModels.CodeResponse = "201";
+                                responseModels.DataApiCobre = responseCobre;
+                                responseModels.Token = Token;
+                                string bodyMessage;
+                                switch (responseCobre.code)
+                                {
+                                    case "200":
+                                        //Pendiente por revision del administrador
+                                        bodyMessage = utilities.GetBodyEmailCode("", dataUser, 4);
+                                        utilities.SendEmail(dataUser.Rows[0]["email"].ToString(), "Anticipo Pendiete", bodyMessage, true, "");
+                                        break;
+                                    case "201":
+                                        advanceRequest.uuid = responseCobre.data;
+                                        advanceRequest.AdvanceAmount = responseCobre.jsonRequest;
+                                        advanceModel.PostAdvance(advanceRequest, 4);
+                                        //"Transaccion registrada"
+                                        bodyMessage = utilities.GetBodyEmailCode("", dataUser, 3);
+                                        utilities.SendEmail(dataUser.Rows[0]["email"].ToString(), "Anticipo generado", bodyMessage, true, "");
+                                        break;
+                                    case "204":
+                                        //Faltas datos personales, llamar a la linea de atencion de JIRO.
+                                        bodyMessage = utilities.GetBodyEmailCode("", dataUser, 2);
+                                        utilities.SendEmail(dataUser.Rows[0]["email"].ToString(), "Anticipo Rechazado", bodyMessage, true, "");
+                                        advanceModel.PostAdvance(advanceRequest, 5);
+                                        break;
+                                    case "500":
+                                        //Error interno
+                                        bodyMessage = utilities.GetBodyEmailCode("", dataUser, 2);
+                                        utilities.SendEmail(dataUser.Rows[0]["email"].ToString(), "Anticipo Rechazado", bodyMessage, true, "");
+                                        advanceModel.PostAdvance(advanceRequest, 5);
                                     break;
-                                case "201":
-                                    advanceRequest.uuid = responseCobre.data;
-                                    advanceRequest.AdvanceAmount = responseCobre.jsonRequest;
-                                    advanceModel.PostAdvance(advanceRequest, 4);
-                                    //"Transaccion registrada"
-                                    bodyMessage = utilities.GetBodyEmailCode("", dataUser, 3);
-                                    utilities.SendEmail(dataUser.Rows[0]["email"].ToString(), "Anticipo generado", bodyMessage, true, "");
-                                    break;
-                                case "204":
-                                    //Faltas datos personales, llamar a la linea de atencion de JIRO.
-                                    bodyMessage = utilities.GetBodyEmailCode("", dataUser, 2);
-                                    utilities.SendEmail(dataUser.Rows[0]["email"].ToString(), "Anticipo Rechazado", bodyMessage, true, "");
-                                    advanceModel.PostAdvance(advanceRequest, 5);
-                                    break;
+                                }
                             }
+                            else
+                                responseModels.CodeResponse = "200";
                         }
-                        else
+                        catch (Exception)
+                        {
+                            responseModels.MessageResponse = "Anticipo Rechazado";
+                            advanceModel.PostAdvance(advanceRequest, 5);
                             responseModels.CodeResponse = "200";
+                        }
                     }
                 }
             }

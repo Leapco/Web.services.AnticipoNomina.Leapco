@@ -226,7 +226,7 @@ namespace WebServicesAnticiposNomina.Models.PaymentGateway
                 using (var _httpClient = new HttpClient())
                 {
                     // Endpoint de la API de Cobre V3
-                    var url = _configuration["paymentGateway:route"] + "/accounts/" + dataUser.Rows[0]["x_api_key_cobre"].ToString();
+                    var url = _configuration["paymentGateway:route"] + "/accounts/" + dataUser.Rows[0]["x_api_key_cobre"].ToString() + "?sensitive_data=true";
 
                     // Agregar el token de autorización
                     _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", Token_acces);
@@ -266,7 +266,7 @@ namespace WebServicesAnticiposNomina.Models.PaymentGateway
                 using (var _httpClient = new HttpClient())
                 {
                     // Endpoint de la API de Cobre V3
-                    var url = _configuration["paymentGateway:route"] + "/accounts/acc_5ilrSi0jCu";
+                    var url = _configuration["paymentGateway:route"] + "/accounts/acc_5ilrSi0jCu?sensitive_data=true";
 
                     // Agregar el token de autorización
                     _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", Token_acces);
@@ -277,7 +277,7 @@ namespace WebServicesAnticiposNomina.Models.PaymentGateway
                     {
                         var responseBody = response.Content.ReadAsStringAsync().Result;
                         dynamic jsonObject = JsonConvert.DeserializeObject<dynamic>(responseBody);
-                        int balance = jsonObject.balance;
+                        int balance = jsonObject.obtained_balance;
 ;
                         return balance;
                     }
@@ -297,6 +297,149 @@ namespace WebServicesAnticiposNomina.Models.PaymentGateway
             catch (Exception)
             {
                 return 0;
+            }
+        }
+        public string PostCounterParty(string Token_acces, DataTable dataUser)
+        {
+            LogsModel logsModel = new LogsModel(_configuration);
+            try
+            {
+                using (var _httpClient = new HttpClient())
+                {
+                    // Endpoint de la API de Cobre V3
+                    var url = _configuration["paymentGateway:route"] + "/counterparties";
+
+                    // Serializar el objeto de solicitud a JSON
+                    var jsonContent = JsonConvert.SerializeObject(this.GetJsonCouterParty(dataUser));
+                    var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
+
+                    // Agregar el token de autorización
+                    _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", Token_acces);
+
+                    // Hacer la solicitud POST
+                    var response = _httpClient.PostAsync(url, content).Result;
+                    if (response.IsSuccessStatusCode)
+                    {
+                        var responseBody = response.Content.ReadAsStringAsync().Result;
+                        dynamic jsonObject = JsonConvert.DeserializeObject<dynamic>(responseBody);
+                        string id = jsonObject.id;
+                        return id;
+                    }
+                    else
+                    {
+                        var errorContent = response.Content.ReadAsStringAsync().Result;
+
+                        LogRequest logRequest = new LogRequest()
+                        {
+                            Origen = "PostCounterParty",
+                            Request_json = response.Content.ReadAsStringAsync().Result.ToString(),
+                            Observacion = "Error registrando la cuenta del usuario en cobre"
+                        };
+                        logsModel.PostLog(logRequest);
+                        return null;
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }         
+        public CounterpartyRequest GetJsonCouterParty(DataTable dataUser)
+        {
+            CounterpartyRequest counterpartyRequest = new CounterpartyRequest();
+            Metadata metadata = new Metadata();
+            counterpartyRequest.geo = "col";
+
+            if (!string.IsNullOrEmpty(dataUser.Rows[0]["accountType"].ToString()))
+                counterpartyRequest.type = dataUser.Rows[0]["accountType"].ToString();
+            else
+                return null;
+
+            var documentNumber = dataUser.Rows[0]["documentNumber"].ToString();
+            if (!string.IsNullOrEmpty(documentNumber))
+                counterpartyRequest.alias = documentNumber + " - 1";
+            else
+                return null;
+
+            if (!string.IsNullOrEmpty(dataUser.Rows[0]["accountNumber"].ToString()))
+                metadata.account_number = dataUser.Rows[0]["accountNumber"].ToString();
+            else
+                return null;
+
+            var email = dataUser.Rows[0]["email"].ToString();
+            if (!string.IsNullOrEmpty(email))
+                metadata.counterparty_email = email.Trim();
+            else
+                return null;
+
+            var phone = dataUser.Rows[0]["phone"].ToString();
+            if (!string.IsNullOrEmpty(phone))
+                metadata.counterparty_phone = phone;
+            else
+                return null;
+
+            var document = dataUser.Rows[0]["documentType"].ToString();
+            if (!string.IsNullOrEmpty(document))
+                metadata.counterparty_id_type = document;
+            else
+                return null;
+
+            var name = dataUser.Rows[0]["name"].ToString();
+            var lastName = dataUser.Rows[0]["lastName"].ToString();
+            if (!string.IsNullOrEmpty(name) && !string.IsNullOrEmpty(lastName))
+            {
+                metadata.counterparty_fullname = name + " " + lastName;
+            }                
+            else
+                return null;
+
+            metadata.counterparty_id_number = documentNumber;
+
+            if (!string.IsNullOrEmpty(dataUser.Rows[0]["bankCode"].ToString()))
+                metadata.beneficiary_institution = dataUser.Rows[0]["bankCode"].ToString();
+            else
+                return null;
+
+
+            counterpartyRequest.metadata = metadata;
+
+            return counterpartyRequest;
+        }
+        public CounterpartyContent GetCounterPartyID(string Token_acces, string idCounterParty)
+        {
+            LogsModel logsModel = new LogsModel(_configuration);
+            try
+            {
+                using (var _httpClient = new HttpClient())
+                {
+                    // Endpoint de la API de Cobre V3
+                    var url = _configuration["paymentGateway:route"] + "/counterparties?sensitive_data=true";
+
+                    // Agregar el token de autorización
+                    _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", Token_acces);
+
+                    // Hacer la solicitud GET
+                    var response = _httpClient.GetAsync(url).Result;
+                    if (response.IsSuccessStatusCode)
+                    {
+                        var responseBody = response.Content.ReadAsStringAsync().Result;
+
+                        // Deserializar la respuesta completa
+                        CounterpartyResponse counterpartyResponse = JsonConvert.DeserializeObject<CounterpartyResponse>(responseBody);
+                        List<CounterpartyContent> counterpartyList = counterpartyResponse.Contents;
+                        
+                        // Buscar datos del destinatario por id
+                        CounterpartyContent counterparty = counterpartyList.FirstOrDefault(c => c.id == idCounterParty);
+
+                        return counterparty;
+                    }
+                }
+                return null;
+            }
+            catch (Exception)
+            {
+                return null;
             }
         }
     }
