@@ -6,6 +6,7 @@ using SixLabors.ImageSharp;
 using System.Data;
 using System.Net.Http;
 using System.Text;
+using WebServicesAnticiposNomina.Core;
 using WebServicesAnticiposNomina.Models.Class;
 using WebServicesAnticiposNomina.Models.Class.Request;
 using WebServicesAnticiposNomina.Models.Class.Response;
@@ -37,13 +38,16 @@ namespace WebServicesAnticiposNomina.Controllers
 
             string TOKEN_ACCES = apiCobre_V3.PostAuthToken_DEV();
 
-            var a = apiCobre_V3.GetCounterPartyID(TOKEN_ACCES, "cp_flRX11JLRj");
+            //var a = apiCobre_V3.GetCounterPartyID(TOKEN_ACCES, "cp_flRX11JLRj");
 
 
 
-            //AdvanceModel advanceModel = new(_Configuration);
-            //DataTable dataUser = advanceModel.PostAdvance(advanceRequest, 2);
+            AdvanceModel advanceModel = new(_Configuration);
+            ApiCobreCore apiCobreCore = new ApiCobreCore(_Configuration);
+            DataTable dataUser = advanceModel.PostAdvance(advanceRequest, 2);
             //string destination_id = apiCobre_V3.PostCounterParty(TOKEN_ACCES, dataUser);
+            var id_cuenta_pasarela = apiCobreCore.GetDataAccountUser(dataUser, TOKEN_ACCES);
+
             //advanceRequest.uuid = destination_id;
             //dataUser = advanceModel.PostAdvance(advanceRequest, 9);
             //int balance = apiCobre_V3.GetBalanceBank_DEV(TOKEN_ACCES);

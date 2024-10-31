@@ -442,5 +442,32 @@ namespace WebServicesAnticiposNomina.Models.PaymentGateway
                 return null;
             }
         }
+        public bool DELETECounterPartyID(string Token_acces, string idCounterParty)
+        {
+            LogsModel logsModel = new LogsModel(_configuration);
+            try
+            {
+                using (var _httpClient = new HttpClient())
+                {
+                    // Endpoint de la API de Cobre V3
+                    var url = _configuration["paymentGateway:route"] + $"/counterparties/{idCounterParty}";
+
+                    // Agregar el token de autorización
+                    _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", Token_acces);
+
+                    // Hacer la solicitud GET
+                    var response = _httpClient.DeleteAsync(url).Result;
+                    if (response.IsSuccessStatusCode)
+                    {
+                        return true;
+                    }
+                }
+                return false;
+            }
+            catch (Exception)
+            {
+                return true;
+            }
+        }
     }
 }
