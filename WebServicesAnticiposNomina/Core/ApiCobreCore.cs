@@ -1,9 +1,7 @@
 ﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System.Data;
 using WebServicesAnticiposNomina.Models.Class;
 using WebServicesAnticiposNomina.Models.Class.Request;
-using WebServicesAnticiposNomina.Models.Class.Response;
 using WebServicesAnticiposNomina.Models.DataBase;
 using WebServicesAnticiposNomina.Models.DataBase.Utilities;
 using WebServicesAnticiposNomina.Models.PaymentGateway;
@@ -54,31 +52,22 @@ namespace WebServicesAnticiposNomina.Core
                         if (Balance > 0)
                         {
                             // crear transacion 
-                            var paymant = PutPaymentClass(dataUser);
-                            if (paymant != null)
+                            //var paymant = PutPaymentClass(dataUser);
+                            try
                             {
-                                try
-                                {
-                                    responseModels = apiCobre.PostPayment(TokenApi, paymant, dataUser);
-                                }
-                                catch (Exception)
-                                {
-                                    LogsModel logsModel = new LogsModel(_configuration);
-                                    LogRequest logRequest = new LogRequest()
-                                    {
-                                        Origen = "PostPayment - error",
-                                        Request_json = paymant.noveltyDetails[0].beneficiary.name.Trim(), // Organizar credenciales de seccion 
-                                        Observacion = "Eror al registrar la transaccion en cobre",
-                                    };
-                                    logsModel.PostLog(logRequest);
-                                    throw;
-                                }
+                                responseModels = apiCobre.PostPayment(TokenApi, dataUser);
                             }
-                            else
+                            catch (Exception)
                             {
-                                responseModels.Message = "Faltan datos personales";
-                                responseModels.code = "204";
-                            }                            
+                                LogsModel logsModel = new LogsModel(_configuration);
+                                LogRequest logRequest = new LogRequest()
+                                {
+                                    Origen = "PostPayment - error",
+                                    Observacion = "Eror al registrar la transaccion en cobre",
+                                };
+                                logsModel.PostLog(logRequest);
+                                throw;
+                            }
                         }
                         else
                         {
@@ -127,7 +116,6 @@ namespace WebServicesAnticiposNomina.Core
             var lastName = dataUser.Rows[0]["lastName"].ToString();
             if (!string.IsNullOrEmpty(lastName))
                 beneficiary.lastName = lastName;
-
             else
                 return null;
 
@@ -169,6 +157,58 @@ namespace WebServicesAnticiposNomina.Core
             paymentClass.noveltyDetails = noveltyDetailList;
 
             return paymentClass;
+        }
+        public string WeebHookPayment_V2(TransactionRequest transactionRequest)
+        {
+            AdvanceCore advanceCore = new(_configuration);
+            Utilities utilities = new(_configuration);
+            AdvanceModel advanceModel = new(_configuration);
+            AdvanceRequest advanceRequest = new();
+            advanceRequest.uuid = transactionRequest.NoveltyUuid;
+            // campo dinamica, se envia toda la respuesta del weebhook
+            advanceRequest.AdvanceAmount = JsonConvert.SerializeObject(transactionRequest);
+            string bodyEmail;
+
+            try
+            {
+                if (transactionRequest.Status == "FINISHED")
+                {
+                    DataTable dataUser = advanceModel.PostAdvance(advanceRequest, 6);
+                    if (dataUser.Rows[0]["state"].ToString() == "2")
+                    {
+                        return "205";
+                    }
+                    if (!advanceCore.CreateContract(dataUser)) advanceCore.CreateContract(dataUser);
+
+                    bodyEmail = utilities.GetBodyEmailCode("", dataUser, 5);
+                    var email = utilities.SendEmail(dataUser.Rows[0]["email"].ToString(), "Anticipo consignado", bodyEmail, true,
+                                    _configuration["route:pathContrato"] + $"\\{dataUser.Rows[0]["id_anticipo"]}.pdf");
+                    return "201";
+                }
+                else
+                {
+                    advanceRequest.DescriptionsCobre = transactionRequest.DescriptionStatus;
+                    DataTable dataUser = advanceModel.PostAdvance(advanceRequest, 7);
+                    if (dataUser.Rows[0]["state"].ToString() == "2")
+                    {
+                        return "205";
+                    }
+                    //consultar el por que del rechazo
+                    string code = "200";
+                    if (dataUser.Rows[0]["state"].ToString() == "1")
+                    {
+                        bodyEmail = utilities.GetBodyEmailCode("", dataUser, 2);
+                        var email = utilities.SendEmail(dataUser.Rows[0]["email"].ToString(), "Anticipo rechazado", bodyEmail, true, "");
+                        code = "204";
+                    }
+
+                    return code;
+                }
+            }
+            catch (Exception ex)
+            {
+                return "500 " + ex.Message;
+            }
         }
         public string WeebHookPayment(TransactionRequest transactionRequest)
         {
@@ -226,46 +266,61 @@ namespace WebServicesAnticiposNomina.Core
         {
             string? destination_id = null;
             string? dataAccountUser = dataUser.Rows[0]["id_cuenta_pasarela"].ToString();
-            AdvanceModel advanceModel = new(_configuration);
-            ApiCobre_v3 apiCobre_V3 = new ApiCobre_v3(_configuration);
-            if (dataAccountUser == null || dataAccountUser == "")
+            try
             {
-                // crear counterparty
-                destination_id = apiCobre_V3.PostCounterParty(Token, dataUser);
-
-                // Registrar id_cuenta_pasarela
-                AdvanceRequest advanceRequest = new()
+                AdvanceModel advanceModel = new(_configuration);
+                ApiCobre_v3 apiCobre_V3 = new ApiCobre_v3(_configuration);
+                if (dataAccountUser == null || dataAccountUser == "")
                 {
-                    ID = dataUser.Rows[0]["documentNumber"].ToString(),
-                    uuid = destination_id
-                };
-                _ = advanceModel.PostAdvance(advanceRequest, 9);
-            }
-            else
-            {
-                destination_id = dataAccountUser;
-                // Validar datos del emprado en cobre
-                CounterpartyContent counterpartyContent = apiCobre_V3.GetCounterPartyID(Token, dataAccountUser);
-                DataRow dataUserRow = dataUser.Rows[0];
+                    // crear counterparty
+                    destination_id = apiCobre_V3.PostCounterParty(Token, dataUser);
 
-                bool isFiel = IsCounterpartyFieldsMatching(counterpartyContent, dataUserRow);
-                if (counterpartyContent == null || !isFiel)
-                {
-                    // Eliminar counterparty que no coincide
-                    _ = apiCobre_V3.DELETECounterPartyID(Token, dataAccountUser);
-
-                    // Preparar solicitud de avance para eliminar cuenta asociada y recrearla
+                    // Registrar id_cuenta_pasarela
                     AdvanceRequest advanceRequest = new()
                     {
-                        ID = dataUserRow["documentNumber"].ToString()
+                        ID = dataUser.Rows[0]["documentNumber"].ToString(),
+                        uuid = destination_id
                     };
-
-                    _ = advanceModel.PostAdvance(advanceRequest, 10);
-
-                    // Limpiar el ID de la cuenta en pasarela y obtener un nuevo destinatario id
-                    dataUserRow["id_cuenta_pasarela"] = null;
-                    destination_id = this.GetDataAccountUser(dataUser, Token);
+                    _ = advanceModel.PostAdvance(advanceRequest, 9);
                 }
+                else
+                {
+                    destination_id = dataAccountUser;
+                    // Validar datos del emprado en cobre
+                    CounterpartyContent counterpartyContent = apiCobre_V3.GetCounterPartyID(Token, dataAccountUser);
+                    DataRow dataUserRow = dataUser.Rows[0];
+
+                    bool isFiel = IsCounterpartyFieldsMatching(counterpartyContent, dataUserRow);
+                    if (counterpartyContent == null || !isFiel)
+                    {
+                        // Eliminar counterparty que no coincide
+                        _ = apiCobre_V3.DELETECounterPartyID(Token, dataAccountUser);
+
+                        // Preparar solicitud de avance para eliminar cuenta asociada y recrearla
+                        AdvanceRequest advanceRequest = new()
+                        {
+                            ID = dataUserRow["documentNumber"].ToString()
+                        };
+
+                        _ = advanceModel.PostAdvance(advanceRequest, 10);
+
+                        // Limpiar el ID de la cuenta en pasarela y obtener un nuevo destinatario id
+                        dataUserRow["id_cuenta_pasarela"] = null;
+                        destination_id = this.GetDataAccountUser(dataUser, Token);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                destination_id = null;
+                LogsModel logsModel = new LogsModel(_configuration);
+                LogRequest logRequest = new LogRequest()
+                {
+                    Origen = "GetDataAccountUser",
+                    Request_json = ex.Message,
+                    Observacion = "Error creando counter party"
+                };
+                logsModel.PostLog(logRequest);
             }
             return destination_id;
         }

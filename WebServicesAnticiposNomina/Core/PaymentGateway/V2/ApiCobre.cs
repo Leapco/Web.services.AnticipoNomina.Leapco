@@ -16,55 +16,40 @@ namespace WebServicesAnticiposNomina.Models.PaymentGateway
         {
             _configuration = configuration;
         }
-        public ResponseCobre PostPayment(string Token, PaymentClass paymentClass, DataTable dataUser)
+        public ResponseCobre PostPayment(string Token, DataTable dataUser)
         {
             ResponseCobre responseCobre = new();
             LogsModel logsModel = new(_configuration);
-            int Id_anticipo = int.Parse(paymentClass.noveltyDetails[0].reference.Trim().Replace("Id_Anticipo - ", ""));
+
+            int Id_Anticipo = int.Parse(dataUser.Rows[0]["id_anticipo"].ToString());
+            string documentNumber = dataUser.Rows[0]["documentNumber"].ToString();
             LogRequest logRequest = new LogRequest()
             {
                 Origen = "PostPayment",
-                Id_Anticipo = Id_anticipo
+                Id_Anticipo = Id_Anticipo
             };
 
             using (var _httpClient = new HttpClient())
             {
-                _httpClient.DefaultRequestHeaders.Add("Accept", "application/json");
-                _httpClient.DefaultRequestHeaders.Add("X-API-KEY", dataUser.Rows[0]["x_api_key_cobre"].ToString());
-                _httpClient.DefaultRequestHeaders.Add("X-APIGW-AUTH", Token);
-                _httpClient.DefaultRequestHeaders.Add("X-CORRELATION-ID", Id_anticipo.ToString());
+                // Agregar el token de autorización
+                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", Token);
+                _httpClient.DefaultRequestHeaders.Add("idempotency", Id_Anticipo.ToString() + documentNumber);
 
-                var jsonRequest = @"{
-                      ""controlRecord"": 1,
-                      ""noveltyDetails"": [
-                          {
-                              ""type"": ""TRANSFER"",
-                              ""totalAmount"": " + paymentClass.noveltyDetails[0].totalAmount + @",
-                              ""description"": ""Anticipos de nomina"",
-                              ""descriptionExtra1"": """",
-                              ""descriptionExtra2"": """",
-                              ""descriptionExtra3"": """",
-                              ""dueDate"": """",
-                              ""reference"": """ + paymentClass.noveltyDetails[0].reference.Trim() + @""",
-                              ""beneficiary"": {
-                                  ""documentType"": """ + paymentClass.noveltyDetails[0].beneficiary.documentType.Trim() + @""",
-                                  ""documentNumber"": """ + paymentClass.noveltyDetails[0].beneficiary.documentNumber.Trim() + @""",
-                                  ""name"": """ + paymentClass.noveltyDetails[0].beneficiary.name.Trim() + @""",
-                                  ""lastName"": """ + paymentClass.noveltyDetails[0].beneficiary.lastName.Trim() + @""",
-                                  ""email"": """ + paymentClass.noveltyDetails[0].beneficiary.email.Trim() + @""",
-                                  ""phone"": """ + paymentClass.noveltyDetails[0].beneficiary.phone.Trim() + @""",
-                                  ""bankInfo"": {
-                                      ""bankCode"": """ + paymentClass.noveltyDetails[0].beneficiary.bankInfo.bankCode.Trim() + @""",
-                                      ""accountType"": """ + paymentClass.noveltyDetails[0].beneficiary.bankInfo.accountType.Trim() + @""",
-                                      ""accountNumber"": """ + (paymentClass.noveltyDetails[0].beneficiary.bankInfo.accountNumber).Trim() + @"""
-                                  }
-                              }
-                          }
-                      ]
-                  }";
+                var jsonRequest = $@"
+                {{
+                    ""amount"": {dataUser.Rows[0]["totalAmount"]}00,
+                    ""metadata"": {{
+                        ""reference"": ""App anticipos"",
+                        ""description"": ""id_anticipo - {dataUser.Rows[0]["id_anticipo"]}""
+                    }},
+                    ""source_id"": ""{dataUser.Rows[0]["x_api_key_cobre"]}"",
+                    ""destination_id"": ""{dataUser.Rows[0]["id_cuenta_pasarela"]}"",
+                    ""external_id"": null,
+                    ""checker_approval"": false
+                }}";
 
                 var content = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
-                string route = _configuration["paymentGateway:route"] + "/workplace-bank-instruction/v2/task/novelties";
+                string route = _configuration["paymentGateway:route"] + "/money_movements";
                 HttpResponseMessage response = new();
                 Utilities utilities = new(_configuration);
 
@@ -87,40 +72,44 @@ namespace WebServicesAnticiposNomina.Models.PaymentGateway
                 var responseContent = response.Content.ReadAsStringAsync().Result;
                 dynamic? jsonObject = JsonConvert.DeserializeObject<dynamic>(responseContent);
 
-                // Lee y retorna el contenido de la respuesta
-                if (response.IsSuccessStatusCode)
+                try
                 {
-                    responseCobre.data = jsonObject.uuid;
-                    responseCobre.code = "201";
-                    responseCobre.Message = "Anticipo registrado";
-                    responseCobre.jsonRequest = jsonRequest;
-                }
-                else
-                {
-                    if (response.StatusCode.Equals("400"))
+                    // Leer y retorna el contenido de la respuesta
+                    if (response.IsSuccessStatusCode)
                     {
-                        string ResponseMessage = jsonObject.moreInfo[0].message;
-
-                        for (int i = 0; i < jsonObject.moreInfo.length; i++)
-                        {
-                            ResponseMessage = jsonObject.moreInfo[i].message + " - ";
-                        }
-                        string Message = "Revisar datos personales";
-                        logRequest.Request_json = ResponseMessage;
-                        logRequest.Observacion = Message;
-                        logsModel.PostLog(logRequest);
-
-                        responseCobre.code = "204";
-                        responseCobre.Message = Message;
+                        responseCobre.data = jsonObject.id;
+                        responseCobre.code = "201";
+                        responseCobre.Message = "Anticipo registrado";
+                        responseCobre.jsonRequest = jsonRequest;
                     }
                     else
                     {
-                        responseCobre.code = response.StatusCode.ToString();
-                        responseCobre.Message = "Ha ocurrido un error al procesar tu pago, intentalo mas tarde.";
+                        responseCobre.code = "204";
+                        if (response.StatusCode.Equals("409"))
+                        {
+                            string ResponseMessage = jsonObject.error_description;
+                            string ResponseCode = jsonObject.error_code;
+
+                            string Message = "Solicitud rechzada por temas tecnicos, intentalo mas tarde.";
+                            logRequest.Request_json = ResponseMessage;
+                            logRequest.Observacion = Message;
+                            logsModel.PostLog(logRequest);
+
+                            responseCobre.Message = Message;
+                        }
+                        else
+                        {
+                            responseCobre.Message = "Ha ocurrido un error al procesar tu pago, intentalo mas tarde.";
+                        }
                     }
                 }
-                return responseCobre;
+                catch (Exception)
+                {
+
+                    throw;
+                }
             }
+            return responseCobre;
         }
         public string PostAuthToken(DataTable dataUser)
         {
@@ -278,7 +267,7 @@ namespace WebServicesAnticiposNomina.Models.PaymentGateway
                         var responseBody = response.Content.ReadAsStringAsync().Result;
                         dynamic jsonObject = JsonConvert.DeserializeObject<dynamic>(responseBody);
                         int balance = jsonObject.obtained_balance;
-;
+                        ;
                         return balance;
                     }
                     else
@@ -344,7 +333,7 @@ namespace WebServicesAnticiposNomina.Models.PaymentGateway
             {
                 return null;
             }
-        }         
+        }
         public CounterpartyRequest GetJsonCouterParty(DataTable dataUser)
         {
             CounterpartyRequest counterpartyRequest = new CounterpartyRequest();
@@ -390,7 +379,7 @@ namespace WebServicesAnticiposNomina.Models.PaymentGateway
             if (!string.IsNullOrEmpty(name) && !string.IsNullOrEmpty(lastName))
             {
                 metadata.counterparty_fullname = name + " " + lastName;
-            }                
+            }
             else
                 return null;
 
@@ -428,7 +417,7 @@ namespace WebServicesAnticiposNomina.Models.PaymentGateway
                         // Deserializar la respuesta completa
                         CounterpartyResponse counterpartyResponse = JsonConvert.DeserializeObject<CounterpartyResponse>(responseBody);
                         List<CounterpartyContent> counterpartyList = counterpartyResponse.Contents;
-                        
+
                         // Buscar datos del destinatario por id
                         CounterpartyContent counterparty = counterpartyList.FirstOrDefault(c => c.id == idCounterParty);
 
