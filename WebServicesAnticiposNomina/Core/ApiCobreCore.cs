@@ -210,20 +210,20 @@ namespace WebServicesAnticiposNomina.Core
                 return "500 " + ex.Message;
             }
         }
-        public string WeebHookPayment(TransactionRequest transactionRequest)
+        public string WeebHookPayment(WebHookRequest webHookRequest)
         {
             AdvanceCore advanceCore = new(_configuration);
             Utilities utilities = new(_configuration);
             AdvanceModel advanceModel = new(_configuration);
             AdvanceRequest advanceRequest = new();
-            advanceRequest.uuid = transactionRequest.NoveltyUuid;
+            advanceRequest.uuid = webHookRequest.id;
             // campo dinamica, se envia toda la respuesta del weebhook
-            advanceRequest.AdvanceAmount = JsonConvert.SerializeObject(transactionRequest);
+            advanceRequest.AdvanceAmount = JsonConvert.SerializeObject(webHookRequest);
             string bodyEmail;
 
             try
             {
-                if (transactionRequest.Status == "FINISHED")
+                if (webHookRequest.content.status.state == "completed")
                 {
                     DataTable dataUser = advanceModel.PostAdvance(advanceRequest, 6);
                     if (dataUser.Rows[0]["state"].ToString() == "2")
@@ -239,7 +239,8 @@ namespace WebServicesAnticiposNomina.Core
                 }
                 else
                 {
-                    advanceRequest.DescriptionsCobre = transactionRequest.DescriptionStatus;
+                    // directorio de errores se busca por el codigo
+                    advanceRequest.DescriptionsCobre = GeterrorDictionary(webHookRequest.content.status.code);
                     DataTable dataUser = advanceModel.PostAdvance(advanceRequest, 7);
                     if (dataUser.Rows[0]["state"].ToString() == "2")
                     {
@@ -332,6 +333,23 @@ namespace WebServicesAnticiposNomina.Core
                    counterpartyContent.type.ToUpper() == dataUserRow["accountType"].ToString().ToUpper() &&
                    counterpartyContent.metadata.counterparty_email.ToUpper() == dataUserRow["email"].ToString().ToUpper() &&
                    counterpartyContent.metadata.counterparty_phone == dataUserRow["phone"].ToString();
+        }
+        private string GeterrorDictionary(string code)
+        {
+            Dictionary<string, string> _errorDictionary;
+
+            // Ruta del archivo JSON
+            var filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Core\\PaymentGateway\\V2", "errorsCobre.json");
+
+            // Lee el contenido del archivo y deserializa a un diccionario
+            var jsonContent = System.IO.File.ReadAllText(filePath);
+            _errorDictionary = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, string>>(jsonContent);
+
+            // Verificar si el código existe y devolver el mensaje
+            if (_errorDictionary.TryGetValue(code, out var message)) return message;
+
+            // Si el código no se encuentra, devolver un mensaje predeterminado
+            return "Código de error no encontrado";
         }
     }
 }

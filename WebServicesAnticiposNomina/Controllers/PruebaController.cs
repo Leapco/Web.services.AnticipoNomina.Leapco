@@ -1,19 +1,8 @@
-﻿using DocumentFormat.OpenXml.Spreadsheet;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
-using MimeKit;
-using SixLabors.ImageSharp;
-using System.Data;
-using System.Net.Http;
-using System.Text;
-using WebServicesAnticiposNomina.Core;
-using WebServicesAnticiposNomina.Models.Class;
-using WebServicesAnticiposNomina.Models.Class.Request;
-using WebServicesAnticiposNomina.Models.Class.Response;
-using WebServicesAnticiposNomina.Models.DataBase;
-using WebServicesAnticiposNomina.Models.DataBase.Utilities;
-using WebServicesAnticiposNomina.Models.PaymentGateway;
-using SmtpClient = MailKit.Net.Smtp.SmtpClient;
+﻿using Microsoft.AspNetCore.Mvc;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Text.Json;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -24,36 +13,59 @@ namespace WebServicesAnticiposNomina.Controllers
     public class PruebaController : ControllerBase
     {
         public IConfiguration _Configuration;
-   
+
         public PruebaController(IConfiguration configuration)
         {
 
             _Configuration = configuration;
 
         }
-        [HttpPost]
-        public string ADVANCE(AdvanceRequest advanceRequest)
+
+
+
+        [HttpGet]
+        public string Get(string code)
         {
-            ApiCobre_v3 apiCobre_V3 = new ApiCobre_v3(_Configuration);
+            Dictionary<string, string> _errorDictionary;
 
-            string TOKEN_ACCES = apiCobre_V3.PostAuthToken_DEV();
-
-            //var a = apiCobre_V3.GetCounterPartyID(TOKEN_ACCES, "cp_flRX11JLRj");
-
+            // Ruta del archivo JSON
+            var filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Core\\PaymentGateway\\V2", "errorsCobre.json");
 
 
-            AdvanceModel advanceModel = new(_Configuration);
-            ApiCobreCore apiCobreCore = new ApiCobreCore(_Configuration);
-            DataTable dataUser = advanceModel.PostAdvance(advanceRequest, 2);
-            //string destination_id = apiCobre_V3.PostCounterParty(TOKEN_ACCES, dataUser);
-            var id_cuenta_pasarela = apiCobreCore.GetDataAccountUser(dataUser, TOKEN_ACCES);
+            // Lee el contenido del archivo y deserializa a un diccionario
+            var jsonContent = System.IO.File.ReadAllText(filePath);
+            _errorDictionary = JsonSerializer.Deserialize<Dictionary<string, string>>(jsonContent);
 
-            //advanceRequest.uuid = destination_id;
-            //dataUser = advanceModel.PostAdvance(advanceRequest, 9);
-            //int balance = apiCobre_V3.GetBalanceBank_DEV(TOKEN_ACCES);
+            _errorDictionary.TryGetValue(code, out var message);
 
-            return $"valor de la cuenta de jiro : ";
+            return message;
         }
+
+
+
+        //[HttpPost]
+        //public string ADVANCE(AdvanceRequest advanceRequest)
+        //{
+        //    ApiCobre_v3 apiCobre_V3 = new ApiCobre_v3(_Configuration);
+
+        //    string TOKEN_ACCES = apiCobre_V3.PostAuthToken_DEV();
+
+        //    //var a = apiCobre_V3.GetCounterPartyID(TOKEN_ACCES, "cp_flRX11JLRj");
+
+
+
+        //    AdvanceModel advanceModel = new(_Configuration);
+        //    ApiCobreCore apiCobreCore = new ApiCobreCore(_Configuration);
+        //    DataTable dataUser = advanceModel.PostAdvance(advanceRequest, 2);
+        //    //string destination_id = apiCobre_V3.PostCounterParty(TOKEN_ACCES, dataUser);
+        //    var id_cuenta_pasarela = apiCobreCore.GetDataAccountUser(dataUser, TOKEN_ACCES);
+
+        //    //advanceRequest.uuid = destination_id;
+        //    //dataUser = advanceModel.PostAdvance(advanceRequest, 9);
+        //    //int balance = apiCobre_V3.GetBalanceBank_DEV(TOKEN_ACCES);
+
+        //    return $"valor de la cuenta de jiro : ";
+        //}
         ////GET api/<PruebaController>/5
         //[HttpGet]
         //public async Task<string> Get(string celular, string mesaje)
@@ -63,7 +75,7 @@ namespace WebServicesAnticiposNomina.Controllers
 
         //     //utilities.SendEmail("joshuatejada@hotmail.com", "Anticipo generado", "prueba", false, "");
 
-        
+
         //    return "Mensaje enviado";
         //}
         // GET api/<PruebaController>/5

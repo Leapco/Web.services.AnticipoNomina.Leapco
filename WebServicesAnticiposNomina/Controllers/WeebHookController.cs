@@ -20,13 +20,13 @@ namespace WebServicesAnticiposNomina.Controllers
         }
 
         [HttpPost]
-        public string Post([FromBody] TransactionRequest transactionRequest)
+        public string Post([FromBody] WebHookRequest webHookRequest)
         {
             string? responseModels;
             try
             {
                 ApiCobreCore apiCobreCore = new(_configuration);
-                responseModels = apiCobreCore.WeebHookPayment(transactionRequest);
+                responseModels = apiCobreCore.WeebHookPayment(webHookRequest);
             }
             catch (Exception)
             {

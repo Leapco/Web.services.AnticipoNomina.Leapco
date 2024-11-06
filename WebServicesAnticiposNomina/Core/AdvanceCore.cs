@@ -129,7 +129,7 @@ namespace WebServicesAnticiposNomina.Core
                                         bodyMessage = utilities.GetBodyEmailCode("", dataUser, 2);
                                         utilities.SendEmail(dataUser.Rows[0]["email"].ToString(), "Anticipo Rechazado", bodyMessage, true, "");
                                         advanceModel.PostAdvance(advanceRequest, 5);
-                                    break;
+                                        break;
                                 }
                             }
                             else
@@ -139,7 +139,7 @@ namespace WebServicesAnticiposNomina.Core
                         {
                             responseModels.MessageResponse = "Anticipo Rechazado";
                             advanceModel.PostAdvance(advanceRequest, 5);
-                            responseModels.CodeResponse = "200";
+                            responseModels.CodeResponse = "204";
                         }
                     }
                 }
@@ -275,7 +275,6 @@ namespace WebServicesAnticiposNomina.Core
                 }
             }
         }
-
         public ResponseModels GetContract(GetContractRequest getContractRequest, string Token)
         {
             ResponseModels responseModels = new();
@@ -327,7 +326,6 @@ namespace WebServicesAnticiposNomina.Core
             }
             return responseModels;
         }
-
         public (string, bool) FindContratc(GetContractRequest getContractRequest)
         {
             string pathClient = _configuration["route:pathContrato"] + "\\" + getContractRequest.Id_Anticipo + ".pdf";
