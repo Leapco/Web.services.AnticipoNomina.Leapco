@@ -226,7 +226,7 @@ namespace WebServicesAnticiposNomina.Models.PaymentGateway
                     {
                         var responseBody = response.Content.ReadAsStringAsync().Result;
                         dynamic jsonObject = JsonConvert.DeserializeObject<dynamic>(responseBody);
-                        int balance = jsonObject.balance;
+                        int balance = jsonObject.obtained_balance;
                         return balance;
                     }
                     else

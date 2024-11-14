@@ -16,7 +16,6 @@ namespace WebServicesAnticiposNomina.Core
         {
             _configuration = configuration;
         }
-
         public ResponseCobre PostPaymentAdvance(DataTable dataUser)
         {
             ResponseCobre responseModels = new();
@@ -71,9 +70,9 @@ namespace WebServicesAnticiposNomina.Core
                         }
                         else
                         {
-                            string msg = "No tiene saldo la plataforma";
+                            string msg = "Algo a salido mal en nuetra plataforma, intentalo mas tarde";
                             responseModels.Message = msg;
-                            responseModels.code = "200";
+                            responseModels.code = "205";
                             _ = utilities.SendEmail(dataUser.Rows[0]["EmailClient"].ToString(), "SALDO INSUFICIENTE COBRE", msg, false, "");
                         }
                     }
@@ -234,7 +233,7 @@ namespace WebServicesAnticiposNomina.Core
 
                     bodyEmail = utilities.GetBodyEmailCode("", dataUser, 5);
                     var email = utilities.SendEmail(dataUser.Rows[0]["email"].ToString(), "Anticipo consignado", bodyEmail, true,
-                                    _configuration["route:pathContrato"] + $"\\{dataUser.Rows[0]["id_anticipo"]}.pdf");
+                                    _configuration["route:pathContrato"] + $"//{dataUser.Rows[0]["id_anticipo"]}.pdf");
                     return "201";
                 }
                 else
@@ -260,7 +259,7 @@ namespace WebServicesAnticiposNomina.Core
             }
             catch (Exception ex)
             {
-                return "500 " + ex.Message;
+                return "500 - 1" + ex.Message;
             }
         }
         public string? GetDataAccountUser(DataTable dataUser, string Token)
@@ -326,20 +325,21 @@ namespace WebServicesAnticiposNomina.Core
             return destination_id;
         }
         private bool IsCounterpartyFieldsMatching(CounterpartyContent counterpartyContent, DataRow dataUserRow)
-        {
-            return counterpartyContent.metadata.counterparty_id_number == dataUserRow["documentNumber"].ToString() &&
-                   counterpartyContent.metadata.counterparty_id_type.ToUpper() == dataUserRow["documentType"].ToString().ToUpper() &&
-                   counterpartyContent.metadata.account_number == dataUserRow["accountNumber"].ToString() &&
-                   counterpartyContent.type.ToUpper() == dataUserRow["accountType"].ToString().ToUpper() &&
-                   counterpartyContent.metadata.counterparty_email.ToUpper() == dataUserRow["email"].ToString().ToUpper() &&
-                   counterpartyContent.metadata.counterparty_phone == dataUserRow["phone"].ToString();
+            {
+            return counterpartyContent.metadata.counterparty_id_number.Trim() == dataUserRow["documentNumber"].ToString().Trim() &&
+                    counterpartyContent.metadata.counterparty_id_type.ToUpper().Trim() == dataUserRow["documentType"].ToString().ToUpper().Trim() &&
+                    counterpartyContent.metadata.account_number.Trim() == dataUserRow["accountNumber"].ToString().Trim() &&
+                    counterpartyContent.type.ToUpper().Trim() == dataUserRow["accountType"].ToString().ToUpper().Trim() &&
+                    counterpartyContent.metadata.counterparty_email.ToUpper().Trim() == dataUserRow["email"].ToString().ToUpper().Trim() &&
+                    counterpartyContent.metadata.counterparty_phone.Trim() == dataUserRow["phone"].ToString().Trim()
+                   ;
         }
         private string GeterrorDictionary(string code)
         {
             Dictionary<string, string> _errorDictionary;
 
             // Ruta del archivo JSON
-            var filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Core\\PaymentGateway\\V2", "errorsCobre.json");
+            var filePath = Path.Combine(_configuration["route:pathErrorsCobre"], "errorsCobre.json");
 
             // Lee el contenido del archivo y deserializa a un diccionario
             var jsonContent = System.IO.File.ReadAllText(filePath);

@@ -111,6 +111,7 @@ namespace WebServicesAnticiposNomina.Models.DataBase.Utilities
             bool result = false;
             try
             {
+                toAddress = "informatica3@gigha.com.co";
                 string? _smtpServer = _configuration["Email:smtpServer"];
                 int _smtpPort = int.Parse(_configuration["Email:smtpPort"]);
                 string? _smtpUsername = _configuration["Email:smtpUsername"];

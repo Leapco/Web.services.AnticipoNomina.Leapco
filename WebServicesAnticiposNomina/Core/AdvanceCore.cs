@@ -1,4 +1,4 @@
-﻿using QRCoder;
+﻿using QRCoder.Core;
 using SelectPdf;
 using System.Data;
 using System.Drawing;
