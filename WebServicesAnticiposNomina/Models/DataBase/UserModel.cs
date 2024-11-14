@@ -29,7 +29,7 @@ namespace WebServicesAnticiposNomina.Models.SQLServer
                 return dbConnection.GetDataTable("LoginApp", parameters);
             }
             catch (Exception)
-            {
+            {                
                 throw;
             }
         }
