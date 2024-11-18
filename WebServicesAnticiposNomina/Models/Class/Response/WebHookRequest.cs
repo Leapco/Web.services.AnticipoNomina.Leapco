@@ -75,6 +75,6 @@ public class MetadataWebhook
 {
     public string description { get; set; }
     public string? reference { get; set; }
-    public string tracking_key { get; set; }
-    public string cep_url { get; set; }
+    public string? tracking_key { get; set; }
+    public string? cep_url { get; set; }
 }

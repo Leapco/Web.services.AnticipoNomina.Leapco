@@ -45,10 +45,10 @@ namespace WebServicesAnticiposNomina.Core
                         // asignar id destinatario
                         dataUser.Rows[0]["id_cuenta_pasarela"] = id_cuenta_pasarela;
 
-                        // Valance de la cuenta
+                        // Balance de la cuenta
                         int Balance = apiCobre.GetBalanceBank(TokenApi, dataUser);
 
-                        if (Balance > 0)
+                        if (Balance > int.Parse(dataUser.Rows[0]["totalAmount"].ToString()))
                         {
                             // crear transacion 
                             //var paymant = PutPaymentClass(dataUser);
@@ -58,6 +58,7 @@ namespace WebServicesAnticiposNomina.Core
                             }
                             catch (Exception)
                             {
+                                responseModels.code = "205";
                                 LogsModel logsModel = new LogsModel(_configuration);
                                 LogRequest logRequest = new LogRequest()
                                 {
@@ -70,7 +71,7 @@ namespace WebServicesAnticiposNomina.Core
                         }
                         else
                         {
-                            string msg = "Algo a salido mal en nuetra plataforma, intentalo mas tarde";
+                            string msg = "Se ha intentado hacer un Anticipo pero no se cuenta con el saldo suficiente, solicita la recarga de tu saldo";
                             responseModels.Message = msg;
                             responseModels.code = "205";
                             _ = utilities.SendEmail(dataUser.Rows[0]["EmailClient"].ToString(), "SALDO INSUFICIENTE COBRE", msg, false, "");
@@ -238,9 +239,14 @@ namespace WebServicesAnticiposNomina.Core
                 }
                 else
                 {
-                    // directorio de errores se busca por el codigo
+                    // Directorio de errores se busca por el codigo
                     advanceRequest.DescriptionsCobre = GeterrorDictionary(webHookRequest.content.status.code);
                     DataTable dataUser = advanceModel.PostAdvance(advanceRequest, 7);
+
+                    //Se elimina la foto
+                    string pathImagenClient = _configuration["route:pathPhotoAdvance"] + "\\" + dataUser.Rows[0]["id_anticipo"] + ".jpg";
+                    File.Delete(pathImagenClient);
+
                     if (dataUser.Rows[0]["state"].ToString() == "2")
                     {
                         return "205";
@@ -259,7 +265,7 @@ namespace WebServicesAnticiposNomina.Core
             }
             catch (Exception ex)
             {
-                return "500 - 1" + ex.Message;
+                return "500";
             }
         }
         public string? GetDataAccountUser(DataTable dataUser, string Token)
@@ -325,7 +331,7 @@ namespace WebServicesAnticiposNomina.Core
             return destination_id;
         }
         private bool IsCounterpartyFieldsMatching(CounterpartyContent counterpartyContent, DataRow dataUserRow)
-            {
+        {
             return counterpartyContent.metadata.counterparty_id_number.Trim() == dataUserRow["documentNumber"].ToString().Trim() &&
                     counterpartyContent.metadata.counterparty_id_type.ToUpper().Trim() == dataUserRow["documentType"].ToString().ToUpper().Trim() &&
                     counterpartyContent.metadata.account_number.Trim() == dataUserRow["accountNumber"].ToString().Trim() &&
