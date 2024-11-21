@@ -207,7 +207,7 @@ namespace WebServicesAnticiposNomina.Models.PaymentGateway
                 }
             }
         }
-        public int GetBalanceBank(string Token_acces, DataTable dataUser)
+        public long GetBalanceBank(string Token_acces, DataTable dataUser)
         {
             LogsModel logsModel = new LogsModel(_configuration);
             try
@@ -226,7 +226,7 @@ namespace WebServicesAnticiposNomina.Models.PaymentGateway
                     {
                         var responseBody = response.Content.ReadAsStringAsync().Result;
                         dynamic jsonObject = JsonConvert.DeserializeObject<dynamic>(responseBody);
-                        int balance = jsonObject.obtained_balance;
+                        long balance = jsonObject.obtained_balance;
                         return balance;
                     }
                     else
@@ -247,7 +247,7 @@ namespace WebServicesAnticiposNomina.Models.PaymentGateway
                 return 0;
             }
         }
-        public int GetBalanceBank_DEV(string Token_acces)
+        public long GetBalanceBank_DEV(string Token_acces)
         {
             LogsModel logsModel = new LogsModel(_configuration);
             try
@@ -266,8 +266,7 @@ namespace WebServicesAnticiposNomina.Models.PaymentGateway
                     {
                         var responseBody = response.Content.ReadAsStringAsync().Result;
                         dynamic jsonObject = JsonConvert.DeserializeObject<dynamic>(responseBody);
-                        int balance = jsonObject.obtained_balance;
-                        ;
+                        long balance = jsonObject.obtained_balance;
                         return balance;
                     }
                     else
@@ -403,7 +402,39 @@ namespace WebServicesAnticiposNomina.Models.PaymentGateway
                 using (var _httpClient = new HttpClient())
                 {
                     // Endpoint de la API de Cobre V3
-                    var url = _configuration["paymentGateway:route"] + "/counterparties?sensitive_data=true";
+                    var url = _configuration["paymentGateway:route"] + $"/counterparties/{idCounterParty}?sensitive_data=true";
+
+                    // Agregar el token de autorización
+                    _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", Token_acces);
+
+                    // Hacer la solicitud GET
+                    var response = _httpClient.GetAsync(url).Result;
+                    if (response.IsSuccessStatusCode)
+                    {
+                        var responseBody = response.Content.ReadAsStringAsync().Result;
+
+                        // Deserializar la respuesta completa
+                        CounterpartyContent counterparty = JsonConvert.DeserializeObject<CounterpartyContent>(responseBody);
+                       
+                        return counterparty;
+                    }
+                }
+                return null;
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
+        public CounterpartyContent GetCounterPartyID_dev(string Token_acces, string idCounterParty, int page)
+        {
+            LogsModel logsModel = new LogsModel(_configuration);
+            try
+            {
+                using (var _httpClient = new HttpClient())
+                {
+                    // Endpoint de la API de Cobre V3
+                    var url = _configuration["paymentGateway:route"] + $"/counterparties?sensitive_data=true&page_number={page}";
 
                     // Agregar el token de autorización
                     _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", Token_acces);

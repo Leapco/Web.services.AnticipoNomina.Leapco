@@ -41,7 +41,7 @@ public class Source
     public Connectivity connectivity { get; set; }
     public string provider_id { get; set; }
     public string provider_name { get; set; }
-    public int obtained_balance { get; set; }
+    public long obtained_balance { get; set; }
     public DateTime obtained_balance_at { get; set; }
     public SourceMetadata metadata { get; set; }
     public string currency { get; set; }

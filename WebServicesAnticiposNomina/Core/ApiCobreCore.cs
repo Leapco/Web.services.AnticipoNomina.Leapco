@@ -37,7 +37,7 @@ namespace WebServicesAnticiposNomina.Core
 
                     if (id_cuenta_pasarela == null || id_cuenta_pasarela == "")
                     {
-                        responseModels.Message = "Error datos personales";
+                        responseModels.Message = "Error datos personales - counterparty";
                         responseModels.code = "204";
                     }
                     else
@@ -46,7 +46,7 @@ namespace WebServicesAnticiposNomina.Core
                         dataUser.Rows[0]["id_cuenta_pasarela"] = id_cuenta_pasarela;
 
                         // Balance de la cuenta
-                        int Balance = apiCobre.GetBalanceBank(TokenApi, dataUser);
+                        long Balance = apiCobre.GetBalanceBank(TokenApi, dataUser);
 
                         if (Balance > int.Parse(dataUser.Rows[0]["totalAmount"].ToString()))
                         {
@@ -71,7 +71,7 @@ namespace WebServicesAnticiposNomina.Core
                         }
                         else
                         {
-                            string msg = "Se ha intentado hacer un Anticipo pero no se cuenta con el saldo suficiente, solicita la recarga de tu saldo";
+                            string msg = "Se ha intentado hacer un Anticipo pero no se cuenta con el saldo suficiente, solicita la recarga de tu saldo - Cliente :"+ dataUser.Rows[0]["x_api_key_cobre"].ToString();
                             responseModels.Message = msg;
                             responseModels.code = "205";
                             _ = utilities.SendEmail(dataUser.Rows[0]["EmailClient"].ToString(), "SALDO INSUFICIENTE COBRE", msg, false, "");
@@ -265,7 +265,7 @@ namespace WebServicesAnticiposNomina.Core
             }
             catch (Exception ex)
             {
-                return "500";
+                return "500" + ex.Message;
             }
         }
         public string? GetDataAccountUser(DataTable dataUser, string Token)
@@ -292,7 +292,7 @@ namespace WebServicesAnticiposNomina.Core
                 else
                 {
                     destination_id = dataAccountUser;
-                    // Validar datos del emprado en cobre
+                    // Validar datos del emprado en cobre                    
                     CounterpartyContent counterpartyContent = apiCobre_V3.GetCounterPartyID(Token, dataAccountUser);
                     DataRow dataUserRow = dataUser.Rows[0];
 

@@ -28,7 +28,7 @@ namespace WebServicesAnticiposNomina.Models.DataBase
                     dbConnection.CreateParam("Request_json", logRequest.Request_json, DbType.String),
                     dbConnection.CreateParam("Origen", logRequest.Origen, DbType.Int64)
                 };
-                return dbConnection.GetDataTable("ProcesoAnticipo", parameters);
+                return dbConnection.GetDataTable("GuardarLogs", parameters);
             }
             catch (Exception)
             {

@@ -135,7 +135,7 @@ namespace WebServicesAnticiposNomina.Core
                                         bodyMessage = utilities.GetBodyEmailCode("", dataUser, 2);
                                         utilities.SendEmail(dataUser.Rows[0]["email"].ToString(), "Anticipo Rechazado", bodyMessage, true, "");
                                         advanceModel.PostAdvance(advanceRequest, 5);
-                                        break;
+                                    break;
                                 }
                             }
                             else
