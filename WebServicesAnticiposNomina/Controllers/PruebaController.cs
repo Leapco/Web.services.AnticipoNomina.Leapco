@@ -71,14 +71,14 @@ namespace WebServicesAnticiposNomina.Controllers
             ApiCobreCore apiCobreCore = new ApiCobreCore(_Configuration);
             DataTable dataUser = advanceModel.PostAdvance(advanceRequest, 2);
             //string destination_id = apiCobre_V3.PostCounterParty(TOKEN_ACCES, dataUser);
-            var id_cuenta_pasarela = apiCobreCore.GetDataAccountUser(dataUser, TOKEN_ACCES);
+            //var id_cuenta_pasarela = apiCobreCore.GetDataAccountUser(dataUser, TOKEN_ACCES);
 
             //int balance = apiCobre_V3.GetBalanceBank(TOKEN_ACCES, dataUser);
 
             //dataUser.Rows[0]["id_cuenta_pasarela"] = id_cuenta_pasarela;
 
 
-            //ResponseCobre responseCobre = apiCobreCore.PostPaymentAdvance(dataUser);
+            ResponseCobre responseCobre = apiCobreCore.PostPaymentAdvance(dataUser);
 
             //advanceRequest.uuid = destination_id;
             //dataUser = advanceModel.PostAdvance(advanceRequest, 9);

@@ -351,7 +351,7 @@ namespace WebServicesAnticiposNomina.Models.PaymentGateway
                 return null;
 
             if (!string.IsNullOrEmpty(dataUser.Rows[0]["accountNumber"].ToString()))
-                metadata.account_number = dataUser.Rows[0]["accountNumber"].ToString();
+                metadata.account_number = dataUser.Rows[0]["accountNumber"].ToString().Trim();
             else
                 return null;
 
