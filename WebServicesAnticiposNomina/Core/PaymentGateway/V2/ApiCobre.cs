@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using System.Data;
+using System.Globalization;
 using System.Net.Http.Headers;
 using System.Text;
 using WebServicesAnticiposNomina.Models.Class;
@@ -377,7 +378,7 @@ namespace WebServicesAnticiposNomina.Models.PaymentGateway
             var lastName = dataUser.Rows[0]["lastName"].ToString();
             if (!string.IsNullOrEmpty(name) && !string.IsNullOrEmpty(lastName))
             {
-                metadata.counterparty_fullname = name + " " + lastName;
+                metadata.counterparty_fullname = RemoveDiacritics(name + " " + lastName);
             }
             else
                 return null;
@@ -425,6 +426,25 @@ namespace WebServicesAnticiposNomina.Models.PaymentGateway
             {
                 return null;
             }
+        }
+        public static string RemoveDiacritics(string text)
+        {
+            if (string.IsNullOrEmpty(text))
+                return text;
+
+            var normalizedString = text.Normalize(NormalizationForm.FormD);
+            var stringBuilder = new StringBuilder();
+
+            foreach (var c in normalizedString)
+            {
+                var unicodeCategory = CharUnicodeInfo.GetUnicodeCategory(c);
+                if (unicodeCategory != UnicodeCategory.NonSpacingMark)
+                {
+                    stringBuilder.Append(c);
+                }
+            }
+
+            return stringBuilder.ToString().Normalize(NormalizationForm.FormC);
         }
         public CounterpartyContent GetCounterPartyID_dev(string Token_acces, string idCounterParty, int page)
         {
