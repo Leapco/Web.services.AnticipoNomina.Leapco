@@ -26,11 +26,11 @@ namespace WebServicesAnticiposNomina.Models.DataBase
                     dbConnection.CreateParam("Id_cliente", logRequest.Id_cliente, DbType.Int64),
                     dbConnection.CreateParam("Observacion", logRequest.Observacion, DbType.String),
                     dbConnection.CreateParam("Request_json", logRequest.Request_json, DbType.String),
-                    dbConnection.CreateParam("Origen", logRequest.Origen, DbType.Int64)
+                    dbConnection.CreateParam("Origen", logRequest.Origen, DbType.String)
                 };
                 return dbConnection.GetDataTable("GuardarLogs", parameters);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 throw;
             }

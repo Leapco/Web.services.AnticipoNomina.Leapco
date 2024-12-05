@@ -216,7 +216,7 @@ namespace WebServicesAnticiposNomina.Models.PaymentGateway
                 using (var _httpClient = new HttpClient())
                 {
                     // Endpoint de la API de Cobre V3
-                    var url = _configuration["paymentGateway:route"] + "/accounts/" + dataUser.Rows[0]["x_api_key_cobre"].ToString() + "?sensitive_data=true";
+                    var url = _configuration["paymentGateway:route"] + "/accounts/" + dataUser.Rows[0]["x_api_key_cobre"].ToString() + "/?sensitive_data=true";
 
                     // Agregar el token de autorización
                     _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", Token_acces);
@@ -245,6 +245,13 @@ namespace WebServicesAnticiposNomina.Models.PaymentGateway
             }
             catch (Exception)
             {
+                LogRequest logRequest = new LogRequest()
+                {
+                    Origen = "GetBalanceBank",
+                    Request_json = "",
+                    Observacion = "error obtener el saldo en cobre"
+                };
+                logsModel.PostLog(logRequest);
                 return 0;
             }
         }
@@ -329,8 +336,15 @@ namespace WebServicesAnticiposNomina.Models.PaymentGateway
                     }
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                LogRequest logRequest = new LogRequest()
+                {
+                    Origen = "PostCounterParty",
+                    Request_json = ex.Message,
+                    Observacion = "Error registrando la cuenta del usuario en cobre"
+                };
+                logsModel.PostLog(logRequest);
                 return null;
             }
         }
@@ -422,8 +436,15 @@ namespace WebServicesAnticiposNomina.Models.PaymentGateway
                 }
                 return null;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                LogRequest logRequest = new LogRequest()
+                {
+                    Origen = "GetCounterPartyID",
+                    Request_json = ex.Message,
+                    Observacion = "Error al consultar la cuenta del usuario en cobre"
+                };
+                logsModel.PostLog(logRequest);
                 return null;
             }
         }

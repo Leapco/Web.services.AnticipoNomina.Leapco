@@ -1,7 +1,9 @@
 ﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System.Data;
 using WebServicesAnticiposNomina.Models.Class;
 using WebServicesAnticiposNomina.Models.Class.Request;
+using WebServicesAnticiposNomina.Models.Class.Response;
 using WebServicesAnticiposNomina.Models.DataBase;
 using WebServicesAnticiposNomina.Models.DataBase.Utilities;
 using WebServicesAnticiposNomina.Models.PaymentGateway;
@@ -47,8 +49,8 @@ namespace WebServicesAnticiposNomina.Core
 
                         // Balance de la cuenta
                         long Balance = apiCobre.GetBalanceBank(TokenApi, dataUser);
-
-                        if (Balance > int.Parse(dataUser.Rows[0]["totalAmount"].ToString()))
+                        long Balance_client = long.Parse(dataUser.Rows[0]["totalAmount"].ToString()+"00");
+                        if (Balance > Balance_client)
                         {
                             // crear transacion 
                             //var paymant = PutPaymentClass(dataUser);
@@ -56,14 +58,14 @@ namespace WebServicesAnticiposNomina.Core
                             {
                                 responseModels = apiCobre.PostPayment(TokenApi, dataUser);
                             }
-                            catch (Exception)
+                            catch (Exception ex )
                             {
                                 responseModels.code = "205";
                                 LogsModel logsModel = new LogsModel(_configuration);
                                 LogRequest logRequest = new LogRequest()
                                 {
                                     Origen = "PostPayment - error",
-                                    Observacion = "Eror al registrar la transaccion en cobre",
+                                    Observacion = "Eror al registrar la transaccion en cobre " + ex.Message,
                                 };
                                 logsModel.PostLog(logRequest);
                                 throw;
@@ -79,8 +81,16 @@ namespace WebServicesAnticiposNomina.Core
                     }
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                LogsModel logsModel = new LogsModel(_configuration);
+                LogRequest logRequest = new LogRequest()
+                {
+                    Origen = "PostPayment - cath",
+                    Observacion =  ex.Message,
+                };
+                logsModel.PostLog(logRequest);
+
                 responseModels.Message = "Error interno";
                 responseModels.code = "500";
             }
@@ -294,25 +304,18 @@ namespace WebServicesAnticiposNomina.Core
                     destination_id = dataAccountUser;
                     // Validar datos del emprado en cobre                    
                     CounterpartyContent counterpartyContent = apiCobre_V3.GetCounterPartyID(Token, dataAccountUser);
-                    DataRow dataUserRow = dataUser.Rows[0];
-
-                    bool isFiel = IsCounterpartyFieldsMatching(counterpartyContent, dataUserRow);
-                    if (counterpartyContent == null || !isFiel)
+                    if (counterpartyContent != null)
                     {
-                        // Eliminar counterparty que no coincide
-                        _ = apiCobre_V3.DELETECounterPartyID(Token, dataAccountUser);
-
-                        // Preparar solicitud de avance para eliminar cuenta asociada y recrearla
-                        AdvanceRequest advanceRequest = new()
+                        DataRow dataUserRow = dataUser.Rows[0];
+                        bool isFiel = IsCounterpartyFieldsMatching(counterpartyContent, dataUserRow);
+                        if (!isFiel)
                         {
-                            ID = dataUserRow["documentNumber"].ToString()
-                        };
-
-                        _ = advanceModel.PostAdvance(advanceRequest, 10);
-
-                        // Limpiar el ID de la cuenta en pasarela y obtener un nuevo destinatario id
-                        dataUserRow["id_cuenta_pasarela"] = null;
-                        destination_id = this.GetDataAccountUser(dataUser, Token);
+                            destination_id = CleanCounterparty(dataUser, Token);
+                        }
+                    }
+                    else
+                    {
+                        destination_id = CleanCounterparty(dataUser, Token);
                     }
                 }
             }
@@ -324,11 +327,33 @@ namespace WebServicesAnticiposNomina.Core
                 {
                     Origen = "GetDataAccountUser",
                     Request_json = ex.Message,
-                    Observacion = "Error creando counter party"
+                    Observacion = $"Error creando counter party: documento {dataUser.Rows[0]["documentNumber"]}"
                 };
                 logsModel.PostLog(logRequest);
             }
             return destination_id;
+        }
+        private string? CleanCounterparty(DataTable dataUser, string Token)
+        {
+            string? dataAccountUser = dataUser.Rows[0]["id_cuenta_pasarela"].ToString();
+            AdvanceModel advanceModel = new(_configuration);
+            ApiCobre_v3 apiCobre_V3 = new ApiCobre_v3(_configuration);
+            DataRow dataUserRow = dataUser.Rows[0];
+
+            // Eliminar counterparty que no coincide
+            _ = apiCobre_V3.DELETECounterPartyID(Token, dataAccountUser);
+
+            // Preparar solicitud de avance para eliminar cuenta asociada y recrearla
+            AdvanceRequest advanceRequest = new()
+            {
+                ID = dataUserRow["documentNumber"].ToString()
+            };
+
+            _ = advanceModel.PostAdvance(advanceRequest, 10);
+
+            // Limpiar el ID de la cuenta en pasarela y obtener un nuevo destinatario id
+            dataUserRow["id_cuenta_pasarela"] = null;
+            return this.GetDataAccountUser(dataUser, Token);
         }
         private bool IsCounterpartyFieldsMatching(CounterpartyContent counterpartyContent, DataRow dataUserRow)
         {

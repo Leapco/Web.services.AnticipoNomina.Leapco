@@ -119,13 +119,13 @@ namespace WebServicesAnticiposNomina.Core
                                         utilities.SendEmail(dataUser.Rows[0]["email"].ToString(), "Anticipo generado", bodyMessage, true, "");
                                         break;
                                     case "204":
-                                        //Faltas datos personales, llamar a la linea de atencion de JIRO.
+                                        //Faltas datos personales
                                         bodyMessage = utilities.GetBodyEmailCode("", dataUser, 2);
                                         utilities.SendEmail(dataUser.Rows[0]["email"].ToString(), "Anticipo Rechazado", bodyMessage, true, "");
                                         advanceModel.PostAdvance(advanceRequest, 5);
                                         break;
                                     case "205":
-                                        //Faltas datos personales, llamar a la linea de atencion de JIRO.
+                                        //Saldo insuficiente en la plataforma
                                         bodyMessage = utilities.GetBodyEmailCode("", dataUser, 2);
                                         utilities.SendEmail(dataUser.Rows[0]["email"].ToString(), "Anticipo Rechazado", bodyMessage, true, "");
                                         advanceModel.PostAdvance(advanceRequest, 11);
@@ -134,8 +134,8 @@ namespace WebServicesAnticiposNomina.Core
                                         //Error interno
                                         bodyMessage = utilities.GetBodyEmailCode("", dataUser, 2);
                                         utilities.SendEmail(dataUser.Rows[0]["email"].ToString(), "Anticipo Rechazado", bodyMessage, true, "");
-                                        advanceModel.PostAdvance(advanceRequest, 5);
-                                    break;
+                                        advanceModel.PostAdvance(advanceRequest, 12);
+                                        break;
                                 }
                             }
                             else
@@ -144,7 +144,7 @@ namespace WebServicesAnticiposNomina.Core
                         catch (Exception)
                         {
                             responseModels.MessageResponse = "Anticipo Rechazado";
-                            advanceModel.PostAdvance(advanceRequest, 5);
+                            advanceModel.PostAdvance(advanceRequest, 12);
                             responseModels.CodeResponse = "204";
                         }
                     }
@@ -233,7 +233,7 @@ namespace WebServicesAnticiposNomina.Core
 
                 return true;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 throw;
             }
@@ -348,6 +348,82 @@ namespace WebServicesAnticiposNomina.Core
                 base64pdf = "El Contrato aún no esta creado";
             }
             return (base64pdf, bandera);
+        }
+        public string crearContratos(List<int> id_Anticipos)
+        {
+            string errores = "{ contrato no creados: ";
+            foreach (int item in id_Anticipos)
+            {
+                AdvanceModel advanceModel = new(_configuration);
+                AdvanceRequest advanceRequest = new();
+                advanceRequest.ID = item.ToString();
+                DataTable dataUser = advanceModel.PostAdvance(advanceRequest, 13);
+
+                try
+                {
+                    if (!CreateContract_manual(dataUser)) CreateContract_manual(dataUser);
+                }
+                catch (Exception)
+                {
+                    errores += $" '{item}',";
+                }
+            }
+            errores += "}";
+            return errores;
+        }
+        public bool CreateContract_manual(DataTable dataTable)
+        {
+            string pathContract = _configuration["route:pathTemplace"] + $"\\{dataTable.Rows[0]["id_anticipo"]}.html";
+            try
+            {
+                //ruta contrato
+                string pathContractPdf = _configuration["route:pathContrato"] + $"\\{dataTable.Rows[0]["id_anticipo"]}.pdf";
+
+                if (!File.Exists(pathContractPdf))
+                {
+                    //Elimar archivo en la ruta enviada
+                    if (File.Exists(pathContract)) File.Delete(pathContract);
+
+                    // creo el contrato base en html
+                    File.Copy(_configuration["route:pathTemplace"] + "\\Contract.html", pathContract);
+
+                    // Leer la imagen y la convierto en base64
+                    string pathImagenClient = _configuration["route:pathPhotoAdvance"] + "\\" + dataTable.Rows[0]["id_anticipo"] + ".jpg";
+
+                    // validar foto
+                    if (!File.Exists(pathImagenClient)) pathImagenClient = _configuration["route:pathPhotoAdvance"] + "\\pordefecto.jpg";
+
+                    byte[] imageBytes = System.IO.File.ReadAllBytes(pathImagenClient);
+                    string base64Image = Convert.ToBase64String(imageBytes);
+
+                    // region
+                    string base64Signature = GenerateQRCode(dataTable.Rows[0]["firma_digital"].ToString());
+                    //agregar al contrato
+
+                    // modifico el contrato en html
+                    this.GetHtmlContent(pathContract, dataTable.Rows[0]["Contrato"].ToString(), base64Image, base64Signature);
+
+                    // Convertir HTML a PDF
+                    var htmlCode = File.ReadAllText(pathContract);
+                    HtmlToPdf converter = new();
+                    PdfDocument doc = converter.ConvertHtmlString(htmlCode);
+                    doc.Security.UserPassword = dataTable.Rows[0]["Identificacion"].ToString();
+                    byte[] data = doc.Save();
+                    doc.Close();
+
+                    // Guardar los bytes en un archivo PDF en la ruta especificada
+                    File.WriteAllBytes(pathContractPdf, data);
+
+                    // Elimino foto y contrato en html
+                    File.Delete(pathContract);
+                    File.Delete(pathImagenClient);
+                }
+                return true;
+            }
+            catch (Exception)
+            {
+                throw;
+            }
         }
     }
 }

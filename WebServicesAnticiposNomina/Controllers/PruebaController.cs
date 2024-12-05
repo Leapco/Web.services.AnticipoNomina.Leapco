@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -8,6 +9,7 @@ using WebServicesAnticiposNomina.Core;
 using WebServicesAnticiposNomina.Models.Class;
 using WebServicesAnticiposNomina.Models.Class.Request;
 using WebServicesAnticiposNomina.Models.DataBase;
+using WebServicesAnticiposNomina.Models.DataBase.Utilities;
 using WebServicesAnticiposNomina.Models.PaymentGateway;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -54,45 +56,57 @@ namespace WebServicesAnticiposNomina.Controllers
 
 
 
-        [HttpPost]
-        public string ADVANCE(AdvanceRequest advanceRequest)
-        {
-            ApiCobre_v3 apiCobre_V3 = new ApiCobre_v3(_Configuration);
+        //[HttpPost]
+        //public string ADVANCE(AdvanceRequest advanceRequest)
+        //{
+        //    ApiCobre_v3 apiCobre_V3 = new ApiCobre_v3(_Configuration);
 
-            string TOKEN_ACCES = apiCobre_V3.PostAuthToken_DEV();
+        //    //string TOKEN_ACCES = apiCobre_V3.PostAuthToken_DEV();
 
-            //var a = apiCobre_V3.GetCounterPartyID(TOKEN_ACCES, "cp_flRX11JLRj");
+        //    //var a = apiCobre_V3.GetCounterPartyID(TOKEN_ACCES, "cp_flRX11JLRj");
 
-            //long balance = apiCobre_V3.GetBalanceBank_DEV(TOKEN_ACCES);
-
-
-
-            AdvanceModel advanceModel = new(_Configuration);
-            ApiCobreCore apiCobreCore = new ApiCobreCore(_Configuration);
-            DataTable dataUser = advanceModel.PostAdvance(advanceRequest, 2);
-            //string destination_id = apiCobre_V3.PostCounterParty(TOKEN_ACCES, dataUser);
-            //var id_cuenta_pasarela = apiCobreCore.GetDataAccountUser(dataUser, TOKEN_ACCES);
-
-            //int balance = apiCobre_V3.GetBalanceBank(TOKEN_ACCES, dataUser);
-
-            //dataUser.Rows[0]["id_cuenta_pasarela"] = id_cuenta_pasarela;
+        //    //long balance = apiCobre_V3.GetBalanceBank_DEV(TOKEN_ACCES);
 
 
-            ResponseCobre responseCobre = apiCobreCore.PostPaymentAdvance(dataUser);
 
-            //advanceRequest.uuid = destination_id;
-            //dataUser = advanceModel.PostAdvance(advanceRequest, 9);
-            //int balance = apiCobre_V3.GetBalanceBank_DEV(TOKEN_ACCES);
+        //    //LogsModel logsModel = new LogsModel(_Configuration);
+        //    //LogRequest logRequest = new LogRequest()
+        //    //{
+        //    //    Origen = "GetDataAccountUser",
+        //    //    Request_json = "prueba",
+        //    //    Observacion = "Error creando counter party"
+        //    //};
+        //    //var a =logsModel.PostLog(logRequest);
 
-            return $"valor de la cuenta de jiro : ";
-        }
+
+
+        //    AdvanceModel advanceModel = new(_Configuration);
+        //    ApiCobreCore apiCobreCore = new ApiCobreCore(_Configuration);
+        //    DataTable dataUser = advanceModel.PostAdvance(advanceRequest, 2);
+        //    //string destination_id = apiCobre_V3.PostCounterParty(TOKEN_ACCES, dataUser);
+        //    //var id_cuenta_pasarela = apiCobreCore.GetDataAccountUser(dataUser, TOKEN_ACCES);
+
+        //    //int balance = apiCobre_V3.GetBalanceBank(TOKEN_ACCES, dataUser);
+
+        //    //dataUser.Rows[0]["id_cuenta_pasarela"] = id_cuenta_pasarela;
+
+
+        //   //ResponseCobre responseCobre = apiCobreCore.PostPaymentAdvance(dataUser);
+
+        //    //advanceRequest.uuid = destination_id;
+        //    //dataUser = advanceModel.PostAdvance(advanceRequest, 9);
+        //    //int balance = apiCobre_V3.GetBalanceBank_DEV(TOKEN_ACCES);
+
+        //    return $"valor de la cuenta de jiro : ";
+        //}
         ////GET api/<PruebaController>/5
         //[HttpGet]
         //public async Task<string> Get(string celular, string mesaje)
         //{
         //    Utilities utilities = new(_Configuration);
         //    await utilities.SendSms(celular, mesaje);
-
+        //    return "melo";
+        //}
             //     //utilities.SendEmail("joshuatejada@hotmail.com", "Anticipo generado", "prueba", false, "");
 
 
