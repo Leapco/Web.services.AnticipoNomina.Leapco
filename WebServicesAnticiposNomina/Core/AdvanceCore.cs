@@ -1,4 +1,5 @@
-﻿using QRCoder.Core;
+﻿using Microsoft.AspNetCore.Mvc;
+using QRCoder.Core;
 using SelectPdf;
 using System.Data;
 using System.Drawing;
@@ -84,6 +85,7 @@ namespace WebServicesAnticiposNomina.Core
 
                 if (isValid)
                 {
+                    Thread.Sleep(2000);
                     var IDToken = claimsPrincipal.FindFirst(ClaimTypes.Name)?.Value;
                     if (advanceRequest.ID.Trim() == IDToken.Trim())
                     {
@@ -93,6 +95,12 @@ namespace WebServicesAnticiposNomina.Core
                         {
                             DataTable dataUser = advanceModel.PostAdvance(advanceRequest, 2);
                             responseModels.MessageResponse = dataUser.Rows[0]["msg"].ToString();
+                            if (dataUser.Rows[0]["state"].ToString() == "3")
+                            {
+                                responseModels.CodeResponse = "201";
+                                responseModels.Token = Token;
+                                return responseModels;
+                            }
 
                             if (dataUser.Rows[0]["state"].ToString() == "1")
                             {
@@ -108,7 +116,7 @@ namespace WebServicesAnticiposNomina.Core
                                     case "200":
                                         //Pendiente por revision del administrador
                                         bodyMessage = utilities.GetBodyEmailCode("", dataUser, 4);
-                                        utilities.SendEmail(dataUser.Rows[0]["email"].ToString(), "Anticipo Pendiete", bodyMessage, true, "");
+                                        utilities.SendEmail(dataUser.Rows[0]["email"].ToString(), "Anticipo Pendiete", bodyMessage, true, "");                                                                             
                                         break;
                                     case "201":
                                         advanceRequest.uuid = responseCobre.data;
@@ -138,8 +146,8 @@ namespace WebServicesAnticiposNomina.Core
                                         break;
                                 }
                             }
-                            else
-                                responseModels.CodeResponse = "200";
+                            else                            
+                                responseModels.CodeResponse = "200";                                                           
                         }
                         catch (Exception)
                         {

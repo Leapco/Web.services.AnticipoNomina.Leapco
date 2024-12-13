@@ -58,7 +58,7 @@ namespace WebServicesAnticiposNomina.Models.DataBase.Utilities
                 { "to", new[] { celular } },
                 { "message", message },
                 { "from", "msg" },
-                { "campaignName", "GIGHA" }
+                { "campaignName", "LEAPCO" }
             };
 
             string? user = _configuration["Sms:user"];

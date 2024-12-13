@@ -41,6 +41,14 @@ namespace WebServicesAnticiposNomina.Core
                     {
                         responseModels.Message = "Error datos personales - counterparty";
                         responseModels.code = "204";
+
+                        LogsModel logsModel = new LogsModel(_configuration);
+                        LogRequest logRequest = new LogRequest()
+                        {
+                            Origen = "GetDataAccountUser",
+                            Observacion = "Respuesta del metodo: " + id_cuenta_pasarela,
+                        };
+                        logsModel.PostLog(logRequest);
                     }
                     else
                     {
@@ -226,7 +234,7 @@ namespace WebServicesAnticiposNomina.Core
             Utilities utilities = new(_configuration);
             AdvanceModel advanceModel = new(_configuration);
             AdvanceRequest advanceRequest = new();
-            advanceRequest.uuid = webHookRequest.id;
+            advanceRequest.uuid = webHookRequest.content.id;
             // campo dinamica, se envia toda la respuesta del weebhook
             advanceRequest.AdvanceAmount = JsonConvert.SerializeObject(webHookRequest);
             string bodyEmail;
