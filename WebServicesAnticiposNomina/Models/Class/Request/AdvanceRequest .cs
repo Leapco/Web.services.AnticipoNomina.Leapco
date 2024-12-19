@@ -11,4 +11,8 @@
         public string? uuid { get; set; }
         public string? DescriptionsCobre { get; set; }
     }
+    public class WebhookFix
+    {
+        public string? request_json { get; set; }
+    }
 }

@@ -56,57 +56,63 @@ namespace WebServicesAnticiposNomina.Controllers
 
 
 
-        //[HttpPost]
-        //public string ADVANCE(AdvanceRequest advanceRequest)
-        //{
-        //    ApiCobre_v3 apiCobre_V3 = new ApiCobre_v3(_Configuration);
+        [HttpPost]
+        public string ADVANCE(AdvanceRequest advanceRequest)
+        {
+            //    ApiCobre_v3 apiCobre_V3 = new ApiCobre_v3(_Configuration);
 
-        //    //string TOKEN_ACCES = apiCobre_V3.PostAuthToken_DEV();
+            //    //string TOKEN_ACCES = apiCobre_V3.PostAuthToken_DEV();
 
-        //    //var a = apiCobre_V3.GetCounterPartyID(TOKEN_ACCES, "cp_flRX11JLRj");
+            //    //var a = apiCobre_V3.GetCounterPartyID(TOKEN_ACCES, "cp_flRX11JLRj");
 
-        //    //long balance = apiCobre_V3.GetBalanceBank_DEV(TOKEN_ACCES);
-
-
-
-        //    //LogsModel logsModel = new LogsModel(_Configuration);
-        //    //LogRequest logRequest = new LogRequest()
-        //    //{
-        //    //    Origen = "GetDataAccountUser",
-        //    //    Request_json = "prueba",
-        //    //    Observacion = "Error creando counter party"
-        //    //};
-        //    //var a =logsModel.PostLog(logRequest);
+            //    //long balance = apiCobre_V3.GetBalanceBank_DEV(TOKEN_ACCES);
 
 
 
-        //    AdvanceModel advanceModel = new(_Configuration);
-        //    ApiCobreCore apiCobreCore = new ApiCobreCore(_Configuration);
-        //    DataTable dataUser = advanceModel.PostAdvance(advanceRequest, 2);
-        //    //string destination_id = apiCobre_V3.PostCounterParty(TOKEN_ACCES, dataUser);
-        //    //var id_cuenta_pasarela = apiCobreCore.GetDataAccountUser(dataUser, TOKEN_ACCES);
+            //    //LogsModel logsModel = new LogsModel(_Configuration);
+            //    //LogRequest logRequest = new LogRequest()
+            //    //{
+            //    //    Origen = "GetDataAccountUser",
+            //    //    Request_json = "prueba",
+            //    //    Observacion = "Error creando counter party"
+            //    //};
+            //    //var a =logsModel.PostLog(logRequest);
 
-        //    //int balance = apiCobre_V3.GetBalanceBank(TOKEN_ACCES, dataUser);
-
-        //    //dataUser.Rows[0]["id_cuenta_pasarela"] = id_cuenta_pasarela;
 
 
-        //   //ResponseCobre responseCobre = apiCobreCore.PostPaymentAdvance(dataUser);
+            AdvanceModel advanceModel = new(_Configuration);
+            ApiCobreCore apiCobreCore = new ApiCobreCore(_Configuration);
+            DataTable dataUser = advanceModel.PostAdvance(advanceRequest, 2);
+            Utilities utilities = new(_Configuration);
 
-        //    //advanceRequest.uuid = destination_id;
-        //    //dataUser = advanceModel.PostAdvance(advanceRequest, 9);
-        //    //int balance = apiCobre_V3.GetBalanceBank_DEV(TOKEN_ACCES);
+            //    //string destination_id = apiCobre_V3.PostCounterParty(TOKEN_ACCES, dataUser);
+            //    //var id_cuenta_pasarela = apiCobreCore.GetDataAccountUser(dataUser, TOKEN_ACCES);
 
-        //    return $"valor de la cuenta de jiro : ";
-        //}
-        ////GET api/<PruebaController>/5
-        //[HttpGet]
-        //public async Task<string> Get(string celular, string mesaje)
-        //{
-        //    Utilities utilities = new(_Configuration);
-        //    await utilities.SendSms(celular, mesaje);
-        //    return "melo";
-        //}
+            //    //int balance = apiCobre_V3.GetBalanceBank(TOKEN_ACCES, dataUser);
+
+            //    //dataUser.Rows[0]["id_cuenta_pasarela"] = id_cuenta_pasarela;
+            string bodyMessage;
+
+
+            bodyMessage = utilities.GetBodyEmailCode("", dataUser, 3);
+            utilities.SendEmail(dataUser.Rows[0]["email"].ToString(), "Anticipo generado", bodyMessage, true, "");
+
+            //ResponseCobre responseCobre = apiCobreCore.PostPaymentAdvance(dataUser);
+
+            //    //advanceRequest.uuid = destination_id;
+            //    //dataUser = advanceModel.PostAdvance(advanceRequest, 9);
+            //    //int balance = apiCobre_V3.GetBalanceBank_DEV(TOKEN_ACCES);
+
+            return $"valor de la cuenta de jiro : ";
+           }
+            ////GET api/<PruebaController>/5
+            //[HttpGet]
+            //public async Task<string> Get(string celular, string mesaje)
+            //{
+            //    Utilities utilities = new(_Configuration);
+            //    await utilities.SendSms(celular, mesaje);
+            //    return "melo";
+            //}
             //     //utilities.SendEmail("joshuatejada@hotmail.com", "Anticipo generado", "prueba", false, "");
 
 
@@ -176,135 +182,135 @@ namespace WebServicesAnticiposNomina.Controllers
             //    }
 
             //    return File(System.IO.File.ReadAllBytes(pdfPath), "application/pdf", "document.pdf");
-            //}
+        //}
 
-            //private readonly string _contractsPath = @"C:\Users\uinformatica6.GIGHA\OneDrive - GIGHA SAS - JIRO SAS\Documentos\Dev\archive\contratos";
+        //private readonly string _contractsPath = @"C:\Users\uinformatica6.GIGHA\OneDrive - GIGHA SAS - JIRO SAS\Documentos\Dev\archive\contratos";
 
-            //    [HttpPost]
-            //    public async Task<ActionResult<string>> InsertImageIntoContract(string photoPath,string contractPath)
-            //    {
-            //        try
-            //        {
-            //            string newContractPath = Path.Combine(_contractsPath, $"contract_{Guid.NewGuid()}.docx");
+        //    [HttpPost]
+        //    public async Task<ActionResult<string>> InsertImageIntoContract(string photoPath,string contractPath)
+        //    {
+        //        try
+        //        {
+        //            string newContractPath = Path.Combine(_contractsPath, $"contract_{Guid.NewGuid()}.docx");
 
-            //            Word.Application wordApp = new Word.Application();
-            //            wordApp.Visible = false;
+        //            Word.Application wordApp = new Word.Application();
+        //            wordApp.Visible = false;
 
-            //            //// Open the contract document
-            //            //Word.Document doc = wordApp.Documents.Open(contractPath);
-            //            //Word.Range range = doc.Range(0, 0);
-            //            //Word.InlineShape inlineShape = range.InlineShapes.AddPicture(imagePath);
+        //            //// Open the contract document
+        //            //Word.Document doc = wordApp.Documents.Open(contractPath);
+        //            //Word.Range range = doc.Range(0, 0);
+        //            //Word.InlineShape inlineShape = range.InlineShapes.AddPicture(imagePath);
 
-            //            //// Save the modified document
-            //            //doc.SaveAs(newContractPath);
-            //            //doc.Close();
-            //            //wordApp.Quit();
+        //            //// Save the modified document
+        //            //doc.SaveAs(newContractPath);
+        //            //doc.Close();
+        //            //wordApp.Quit();
 
-            //            //// Release COM objects
-            //            //Marshal.ReleaseComObject(inlineShape);
-            //            //Marshal.ReleaseComObject(range);
-            //            //Marshal.ReleaseComObject(doc);
-            //            //Marshal.ReleaseComObject(wordApp);
+        //            //// Release COM objects
+        //            //Marshal.ReleaseComObject(inlineShape);
+        //            //Marshal.ReleaseComObject(range);
+        //            //Marshal.ReleaseComObject(doc);
+        //            //Marshal.ReleaseComObject(wordApp);
 
-            //            return Ok();
-            //        }
-            //        catch (Exception ex)
-            //        {
-            //            return StatusCode(500, ex.Message);
-            //        }
-            //    }
+        //            return Ok();
+        //        }
+        //        catch (Exception ex)
+        //        {
+        //            return StatusCode(500, ex.Message);
+        //        }
+        //    }
 
-            //}
+        //}
 
 
-            //[HttpPost]
-            //public string Post(PaymentClass paymentClass)
-            //{
-            //    string result = "";
-            //    try
-            //    {
-            //        ApiCobre apiCobre = new ApiCobre(_Configuration);
-            //        string Token = apiCobre.PostAuthToken("");
-            //        int Balance = apiCobre.GetBalanceBank(Token);
+        //[HttpPost]
+        //public string Post(PaymentClass paymentClass)
+        //{
+        //    string result = "";
+        //    try
+        //    {
+        //        ApiCobre apiCobre = new ApiCobre(_Configuration);
+        //        string Token = apiCobre.PostAuthToken("");
+        //        int Balance = apiCobre.GetBalanceBank(Token);
 
-            //        if (Balance > 0)
-            //        {
-            //            result = apiCobre.PostPayment(Token, paymentClass);
-            //        }
+        //        if (Balance > 0)
+        //        {
+        //            result = apiCobre.PostPayment(Token, paymentClass);
+        //        }
 
-            //    }
-            //    catch (Exception)
-            //    {
-            //        result = "401";
-            //    }
-            //    return result;
-            //}
+        //    }
+        //    catch (Exception)
+        //    {
+        //        result = "401";
+        //    }
+        //    return result;
+        //}
 
-            //[HttpPost]
-            //public string Post([FromHeader] string Token, [FromBody] PaymentClass paymentClass)
-            //{
-            //    string result = "";
-            //    try
-            //    {
-            //        ApiCobre apiCobre = new ApiCobre(_Configuration);
+        //[HttpPost]
+        //public string Post([FromHeader] string Token, [FromBody] PaymentClass paymentClass)
+        //{
+        //    string result = "";
+        //    try
+        //    {
+        //        ApiCobre apiCobre = new ApiCobre(_Configuration);
 
-            //        result = apiCobre.PostPayment(Token, paymentClass);
-            //    }
-            //    catch (Exception)
-            //    {
-            //        result = "401";
-            //    }
-            //    return result;
-            //}
+        //        result = apiCobre.PostPayment(Token, paymentClass);
+        //    }
+        //    catch (Exception)
+        //    {
+        //        result = "401";
+        //    }
+        //    return result;
+        //}
 
-            //[HttpPut]
-            //public async Task<string> Put([FromHeader] string Token)
-            //{
-            //    string result = "";
-            //    try
-            //    {
-            //        ApiCobre apiCobre = new ApiCobre(_Configuration);
+        //[HttpPut]
+        //public async Task<string> Put([FromHeader] string Token)
+        //{
+        //    string result = "";
+        //    try
+        //    {
+        //        ApiCobre apiCobre = new ApiCobre(_Configuration);
 
-            //        //result = apiCobre.PostPaymentAsync(Token);
-            //    }
-            //    catch (Exception)
-            //    {
-            //        result = "401";
-            //    }
-            //    return result;
-            //}
-            //[HttpPut]
-            //public async Task<string> Put([FromHeader] string codigo, int option)
-            //{
-            //    string result = "";
-            //    try
-            //    {
-            //        Utilities utilities = new Utilities(_Configuration);
+        //        //result = apiCobre.PostPaymentAsync(Token);
+        //    }
+        //    catch (Exception)
+        //    {
+        //        result = "401";
+        //    }
+        //    return result;
+        //}
+        //[HttpPut]
+        //public async Task<string> Put([FromHeader] string codigo, int option)
+        //{
+        //    string result = "";
+        //    try
+        //    {
+        //        Utilities utilities = new Utilities(_Configuration);
 
-            //        result = utilities.EncryptCode(codigo, option);
-            //    }
-            //    catch (Exception)
-            //    {
-            //        result = "401";
-            //    }
-            //    return result;
-            //}
+        //        result = utilities.EncryptCode(codigo, option);
+        //    }
+        //    catch (Exception)
+        //    {
+        //        result = "401";
+        //    }
+        //    return result;
+        //}
 
-            //[HttpPost]
-            //public string Post([FromBody] AdvanceRequest advanceRequest)
-            //{
-            //    string result = "";
-            //    try
-            //    {
-            //        Utilities utilities = new(_Configuration);
+        //[HttpPost]
+        //public string Post([FromBody] AdvanceRequest advanceRequest)
+        //{
+        //    string result = "";
+        //    try
+        //    {
+        //        Utilities utilities = new(_Configuration);
 
-            //        utilities.SavePhoto(advanceRequest.Base64Image, 666);
-            //    }
-            //    catch (Exception ex)
-            //    {
-            //        return ex.Message;
-            //    }
-            //    return "imagen subida";
-            //}
+        //        utilities.SavePhoto(advanceRequest.Base64Image, 666);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return ex.Message;
+        //    }
+        //    return "imagen subida";
+        //}
     }
 }

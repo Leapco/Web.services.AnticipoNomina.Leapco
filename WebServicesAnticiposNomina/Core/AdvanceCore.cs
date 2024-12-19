@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using QRCoder.Core;
+﻿using QRCoder.Core;
 using SelectPdf;
 using System.Data;
 using System.Drawing;
@@ -116,7 +115,7 @@ namespace WebServicesAnticiposNomina.Core
                                     case "200":
                                         //Pendiente por revision del administrador
                                         bodyMessage = utilities.GetBodyEmailCode("", dataUser, 4);
-                                        utilities.SendEmail(dataUser.Rows[0]["email"].ToString(), "Anticipo Pendiete", bodyMessage, true, "");                                                                             
+                                        utilities.SendEmail(dataUser.Rows[0]["email"].ToString(), "Anticipo Pendiete", bodyMessage, true, "");
                                         break;
                                     case "201":
                                         advanceRequest.uuid = responseCobre.data;
@@ -146,8 +145,8 @@ namespace WebServicesAnticiposNomina.Core
                                         break;
                                 }
                             }
-                            else                            
-                                responseModels.CodeResponse = "200";                                                           
+                            else
+                                responseModels.CodeResponse = "200";
                         }
                         catch (Exception)
                         {
@@ -212,12 +211,15 @@ namespace WebServicesAnticiposNomina.Core
 
                 // Leer la imagen y la convierto en base64
                 string pathImagenClient = _configuration["route:pathPhotoAdvance"] + "\\" + dataTable.Rows[0]["id_anticipo"] + ".jpg";
+
+                // validar foto
+                if (!File.Exists(pathImagenClient)) pathImagenClient = _configuration["route:pathPhotoAdvance"] + "\\pordefecto.jpg";
+
                 byte[] imageBytes = System.IO.File.ReadAllBytes(pathImagenClient);
                 string base64Image = Convert.ToBase64String(imageBytes);
 
                 // region
                 string base64Signature = GenerateQRCode(dataTable.Rows[0]["firma_digital"].ToString());
-                //agregar al contrato
 
                 // modifico el contrato en html
                 this.GetHtmlContent(pathContract, dataTable.Rows[0]["Contrato"].ToString(), base64Image, base64Signature);
@@ -237,7 +239,11 @@ namespace WebServicesAnticiposNomina.Core
 
                 // Elimino foto y contrato en html
                 File.Delete(pathContract);
-                File.Delete(pathImagenClient);
+
+                if (!pathImagenClient.Contains("pordefecto"))
+                {
+                    File.Delete(pathImagenClient);
+                }
 
                 return true;
             }

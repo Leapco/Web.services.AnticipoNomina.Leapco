@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Data;
+using System.Text.Json;
 using WebServicesAnticiposNomina.Models.Class;
 using WebServicesAnticiposNomina.Models.Class.Request;
 using WebServicesAnticiposNomina.Models.Class.Response;
@@ -228,20 +229,48 @@ namespace WebServicesAnticiposNomina.Core
                 return "500 " + ex.Message;
             }
         }
-        public string WeebHookPayment(WebHookRequest webHookRequest)
+        public string WeebHookPayment(dynamic webHookRequest)
         {
             AdvanceCore advanceCore = new(_configuration);
             Utilities utilities = new(_configuration);
             AdvanceModel advanceModel = new(_configuration);
             AdvanceRequest advanceRequest = new();
-            advanceRequest.uuid = webHookRequest.content.id;
+            string? stateCobre = "", codeCobre = "";
+
+            // convertir webHookRequest a JsonElement
+            JsonElement jsonElement = (JsonElement)webHookRequest;
+
+            // Verifica y accede a los campos
+            if (jsonElement.TryGetProperty("content", out JsonElement contentElement) &&
+                contentElement.TryGetProperty("id", out JsonElement idElement) &&
+                contentElement.TryGetProperty("status", out JsonElement statusElement) &&
+                statusElement.TryGetProperty("state", out JsonElement stateElement) &&
+                statusElement.TryGetProperty("code", out JsonElement codeElement))
+            {
+                advanceRequest.uuid = idElement.GetString();
+                stateCobre = stateElement.GetString();
+                codeCobre = codeElement.GetString();
+            }
+            else
+            {
+                if (jsonElement.TryGetProperty("id", out JsonElement idElement1) &&
+                    jsonElement.TryGetProperty("status", out JsonElement statusElement1) &&
+                    statusElement1.TryGetProperty("state", out JsonElement stateElement1) &&
+                    statusElement1.TryGetProperty("code", out JsonElement codeElement1))
+                {
+                    advanceRequest.uuid = idElement1.GetString();
+                    stateCobre = stateElement1.GetString();
+                    codeCobre = codeElement1.GetString();
+                }
+            }
+
             // campo dinamica, se envia toda la respuesta del weebhook
-            advanceRequest.AdvanceAmount = JsonConvert.SerializeObject(webHookRequest);
+            advanceRequest.AdvanceAmount = jsonElement.GetRawText();
             string bodyEmail;
 
             try
             {
-                if (webHookRequest.content.status.state == "completed")
+                if (stateCobre == "completed")
                 {
                     DataTable dataUser = advanceModel.PostAdvance(advanceRequest, 6);
                     if (dataUser.Rows[0]["state"].ToString() == "2")
@@ -258,7 +287,7 @@ namespace WebServicesAnticiposNomina.Core
                 else
                 {
                     // Directorio de errores se busca por el codigo
-                    advanceRequest.DescriptionsCobre = GeterrorDictionary(webHookRequest.content.status.code);
+                    advanceRequest.DescriptionsCobre = GeterrorDictionary(codeCobre);
                     DataTable dataUser = advanceModel.PostAdvance(advanceRequest, 7);
 
                     //Se elimina la foto
