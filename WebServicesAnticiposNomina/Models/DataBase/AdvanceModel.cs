@@ -29,7 +29,7 @@ namespace WebServicesAnticiposNomina.Models.DataBase
                     dbConnection.CreateParam("DescriptionsCobre", AdvanceRequest.DescriptionsCobre, DbType.String),
                     dbConnection.CreateParam("Option", Option, DbType.Int64)
                 };
-                return dbConnection.GetDataTable("ProcesoAnticipo", parameters);
+                return dbConnection.GetDataTable("ProcesoAnticipo_dev", parameters);
             }
             catch (Exception)
             {
