@@ -94,7 +94,7 @@ namespace WebServicesAnticiposNomina.Controllers
             string bodyMessage;
 
 
-            bodyMessage = utilities.GetBodyEmailCode("", dataUser, 3);
+            bodyMessage = utilities.GetBodyEmailCode("067534", dataUser, 1);
             utilities.SendEmail(dataUser.Rows[0]["email"].ToString(), "Anticipo generado", bodyMessage, true, "");
 
             //ResponseCobre responseCobre = apiCobreCore.PostPaymentAdvance(dataUser);

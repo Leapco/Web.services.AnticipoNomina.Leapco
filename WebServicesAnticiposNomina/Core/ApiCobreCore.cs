@@ -1,10 +1,8 @@
 ﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System.Data;
 using System.Text.Json;
 using WebServicesAnticiposNomina.Models.Class;
 using WebServicesAnticiposNomina.Models.Class.Request;
-using WebServicesAnticiposNomina.Models.Class.Response;
 using WebServicesAnticiposNomina.Models.DataBase;
 using WebServicesAnticiposNomina.Models.DataBase.Utilities;
 using WebServicesAnticiposNomina.Models.PaymentGateway;
@@ -58,7 +56,7 @@ namespace WebServicesAnticiposNomina.Core
 
                         // Balance de la cuenta
                         long Balance = apiCobre.GetBalanceBank(TokenApi, dataUser);
-                        long Balance_client = long.Parse(dataUser.Rows[0]["totalAmount"].ToString()+"00");
+                        long Balance_client = long.Parse(dataUser.Rows[0]["totalAmount"].ToString() + "00");
                         if (Balance > Balance_client)
                         {
                             // crear transacion 
@@ -67,7 +65,7 @@ namespace WebServicesAnticiposNomina.Core
                             {
                                 responseModels = apiCobre.PostPayment(TokenApi, dataUser);
                             }
-                            catch (Exception ex )
+                            catch (Exception ex)
                             {
                                 responseModels.code = "205";
                                 LogsModel logsModel = new LogsModel(_configuration);
@@ -82,7 +80,7 @@ namespace WebServicesAnticiposNomina.Core
                         }
                         else
                         {
-                            string msg = "Se ha intentado hacer un Anticipo pero no se cuenta con el saldo suficiente, solicita la recarga de tu saldo - Cliente :"+ dataUser.Rows[0]["x_api_key_cobre"].ToString();
+                            string msg = "Se ha intentado hacer un Anticipo pero no se cuenta con el saldo suficiente, solicita la recarga de tu saldo - Cliente :" + dataUser.Rows[0]["x_api_key_cobre"].ToString();
                             responseModels.Message = msg;
                             responseModels.code = "205";
                             _ = utilities.SendEmail(dataUser.Rows[0]["EmailClient"].ToString(), "SALDO INSUFICIENTE COBRE", msg, false, "");
@@ -96,7 +94,7 @@ namespace WebServicesAnticiposNomina.Core
                 LogRequest logRequest = new LogRequest()
                 {
                     Origen = "PostPayment - cath",
-                    Observacion =  ex.Message,
+                    Observacion = ex.Message,
                 };
                 logsModel.PostLog(logRequest);
 
@@ -253,6 +251,7 @@ namespace WebServicesAnticiposNomina.Core
             }
             else
             {
+                // Cuando es valido manual desde el postman
                 if (jsonElement.TryGetProperty("id", out JsonElement idElement1) &&
                     jsonElement.TryGetProperty("status", out JsonElement statusElement1) &&
                     statusElement1.TryGetProperty("state", out JsonElement stateElement1) &&
@@ -270,9 +269,13 @@ namespace WebServicesAnticiposNomina.Core
 
             try
             {
+                DataTable dataUser = new DataTable();
                 if (stateCobre == "completed")
                 {
-                    DataTable dataUser = advanceModel.PostAdvance(advanceRequest, 6);
+                    dataUser = advanceModel.PostAdvance(advanceRequest, 6);
+                    // Validar saldo en cobre
+                    this.ISValidateAccountBalance(dataUser, jsonElement);
+
                     if (dataUser.Rows[0]["state"].ToString() == "2")
                     {
                         return "205";
@@ -288,7 +291,9 @@ namespace WebServicesAnticiposNomina.Core
                 {
                     // Directorio de errores se busca por el codigo
                     advanceRequest.DescriptionsCobre = GeterrorDictionary(codeCobre);
-                    DataTable dataUser = advanceModel.PostAdvance(advanceRequest, 7);
+                    dataUser = advanceModel.PostAdvance(advanceRequest, 7);
+                    // Validar saldo en cobre
+                    this.ISValidateAccountBalance(dataUser, jsonElement);
 
                     //Se elimina la foto
                     string pathImagenClient = _configuration["route:pathPhotoAdvance"] + "\\" + dataUser.Rows[0]["id_anticipo"] + ".jpg";
@@ -418,6 +423,47 @@ namespace WebServicesAnticiposNomina.Core
 
             // Si el código no se encuentra, devolver un mensaje predeterminado
             return "Código de error no encontrado";
+        }
+
+        private bool ISValidateAccountBalance(DataTable dataUser, JsonElement jsonElementWebHook)
+        {
+            // Verifica que "umbral" no sea null ni vacío
+            if (dataUser.Rows[0]["umbral"] != DBNull.Value && int.TryParse(dataUser.Rows[0]["umbral"].ToString(), out int umbral))
+            {
+                umbral *= 100;
+
+                // Accede a "obtained_balance" del JSON
+                if (jsonElementWebHook.TryGetProperty("content", out JsonElement contentElement) &&
+                    contentElement.TryGetProperty("source", out JsonElement sourceElement) &&
+                    sourceElement.TryGetProperty("obtained_balance", out JsonElement obtainedBalanceElement))
+                {
+                    long obtainedBalance;
+
+                    // Verifica si el elemento JSON es de tipo número
+                    if (obtainedBalanceElement.ValueKind == JsonValueKind.Number &&
+                        obtainedBalanceElement.TryGetInt64(out obtainedBalance))
+                    {
+                        // Valida si el umbral supera el saldo obtenido
+                        if (umbral >= obtainedBalance)
+                        {
+                            SendInsufficientBalanceEmail(dataUser);
+                            return true;
+                        }
+                    }
+                }
+            }
+            return false;
+        }
+
+        // Método auxiliar para enviar el correo
+        private void SendInsufficientBalanceEmail(DataTable dataUser)
+        {
+            string clientName = dataUser.Rows[0]["NombreCLiente"].ToString();
+            string clientEmail = dataUser.Rows[0]["EmailClient"].ToString();
+            string msg = $"No se cuenta con el saldo suficiente en la plataforma de cobre V3 - Cliente: {clientName}";
+
+            Utilities utilities = new(_configuration);
+            utilities.SendEmail(clientEmail, "SALDO INSUFICIENTE COBRE", msg, false, "");
         }
     }
 }
