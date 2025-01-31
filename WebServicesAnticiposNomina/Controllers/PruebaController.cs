@@ -28,6 +28,14 @@ namespace WebServicesAnticiposNomina.Controllers
             _Configuration = configuration;
 
         }
+        // Prueba weebhook
+
+        //[HttpGet]
+        //public void SendWebhook(int id_anticipo)
+        //{
+        //    WebhookCore webhookCore = new WebhookCore(_Configuration);
+        //    webhookCore.SendWebhook(id_anticipo);           
+        //}
 
         //[HttpGet]
         //public string Get(string code)
@@ -56,55 +64,55 @@ namespace WebServicesAnticiposNomina.Controllers
 
 
 
-        [HttpPost]
-        public string ADVANCE(AdvanceRequest advanceRequest)
-        {
-            //    ApiCobre_v3 apiCobre_V3 = new ApiCobre_v3(_Configuration);
+        //[HttpPost]
+        //public string ADVANCE(AdvanceRequest advanceRequest)
+        //{
+        //    ApiCobre_v3 apiCobre_V3 = new ApiCobre_v3(_Configuration);
 
-            //    //string TOKEN_ACCES = apiCobre_V3.PostAuthToken_DEV();
+        //   string TOKEN_ACCES = apiCobre_V3.PostAuthToken_DEV();
 
-            //    //var a = apiCobre_V3.GetCounterPartyID(TOKEN_ACCES, "cp_flRX11JLRj");
+        //    //    //var a = apiCobre_V3.GetCounterPartyID(TOKEN_ACCES, "cp_flRX11JLRj");
 
-            //    //long balance = apiCobre_V3.GetBalanceBank_DEV(TOKEN_ACCES);
-
-
-
-            //    //LogsModel logsModel = new LogsModel(_Configuration);
-            //    //LogRequest logRequest = new LogRequest()
-            //    //{
-            //    //    Origen = "GetDataAccountUser",
-            //    //    Request_json = "prueba",
-            //    //    Observacion = "Error creando counter party"
-            //    //};
-            //    //var a =logsModel.PostLog(logRequest);
+        //    //    //long balance = apiCobre_V3.GetBalanceBank_DEV(TOKEN_ACCES);
 
 
 
-            AdvanceModel advanceModel = new(_Configuration);
-            ApiCobreCore apiCobreCore = new ApiCobreCore(_Configuration);
-            DataTable dataUser = advanceModel.PostAdvance(advanceRequest, 2);
-            Utilities utilities = new(_Configuration);
-
-            //    //string destination_id = apiCobre_V3.PostCounterParty(TOKEN_ACCES, dataUser);
-            //    //var id_cuenta_pasarela = apiCobreCore.GetDataAccountUser(dataUser, TOKEN_ACCES);
-
-            //    //int balance = apiCobre_V3.GetBalanceBank(TOKEN_ACCES, dataUser);
-
-            //    //dataUser.Rows[0]["id_cuenta_pasarela"] = id_cuenta_pasarela;
-            string bodyMessage;
+        //    //    //LogsModel logsModel = new LogsModel(_Configuration);
+        //    //    //LogRequest logRequest = new LogRequest()
+        //    //    //{
+        //    //    //    Origen = "GetDataAccountUser",
+        //    //    //    Request_json = "prueba",
+        //    //    //    Observacion = "Error creando counter party"
+        //    //    //};
+        //    //    //var a =logsModel.PostLog(logRequest);
 
 
-            bodyMessage = utilities.GetBodyEmailCode("067534", dataUser, 1);
-            utilities.SendEmail(dataUser.Rows[0]["email"].ToString(), "Anticipo generado", bodyMessage, true, "");
 
-            //ResponseCobre responseCobre = apiCobreCore.PostPaymentAdvance(dataUser);
+        //    AdvanceModel advanceModel = new(_Configuration);
+        //    ApiCobreCore apiCobreCore = new ApiCobreCore(_Configuration);
+        //    DataTable dataUser = advanceModel.PostAdvance(advanceRequest, 2);
+        //    Utilities utilities = new(_Configuration);
 
-            //    //advanceRequest.uuid = destination_id;
-            //    //dataUser = advanceModel.PostAdvance(advanceRequest, 9);
-            //    //int balance = apiCobre_V3.GetBalanceBank_DEV(TOKEN_ACCES);
+        //    //string destination_id = apiCobre_V3.PostCounterParty(TOKEN_ACCES, dataUser);
+        //    //    //var id_cuenta_pasarela = apiCobreCore.GetDataAccountUser(dataUser, TOKEN_ACCES);
 
-            return $"valor de la cuenta de jiro : ";
-           }
+        //    //    //int balance = apiCobre_V3.GetBalanceBank(TOKEN_ACCES, dataUser);
+
+        //    //    //dataUser.Rows[0]["id_cuenta_pasarela"] = id_cuenta_pasarela;
+        //    string bodyMessage;
+
+
+        //    //bodyMessage = utilities.GetBodyEmailCode("067534", dataUser, 1);
+        //   // utilities.SendEmail(dataUser.Rows[0]["email"].ToString(), "Anticipo generado", bodyMessage, true, "");
+
+        //    //ResponseCobre responseCobre = apiCobreCore.PostPaymentAdvance(dataUser);
+
+        //    //    //advanceRequest.uuid = destination_id;
+        //    //    //dataUser = advanceModel.PostAdvance(advanceRequest, 9);
+        //    //    //int balance = apiCobre_V3.GetBalanceBank_DEV(TOKEN_ACCES);
+
+        //    return $"valor de la cuenta de jiro : ";
+        //   }
             ////GET api/<PruebaController>/5
             //[HttpGet]
             //public async Task<string> Get(string celular, string mesaje)

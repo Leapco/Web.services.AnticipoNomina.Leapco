@@ -285,19 +285,35 @@ namespace WebServicesAnticiposNomina.Core
                     bodyEmail = utilities.GetBodyEmailCode("", dataUser, 5);
                     var email = utilities.SendEmail(dataUser.Rows[0]["email"].ToString(), "Anticipo consignado", bodyEmail, true,
                                     _configuration["route:pathContrato"] + $"//{dataUser.Rows[0]["id_anticipo"]}.pdf");
-                    return "201";
+
+                    //Validacion de webbhok por api
+                    if (dataUser.Rows[0]["api_key"].ToString() == "API")
+                    {
+                        WebhookCore webhookCore = new(_configuration);
+                        webhookCore.SendWebhook(int.Parse(dataUser.Rows[0]["id_anticipo"].ToString()));
+                    }
+
+                    return "201 consignado";
                 }
                 else
                 {
                     // Directorio de errores se busca por el codigo
                     advanceRequest.DescriptionsCobre = GeterrorDictionary(codeCobre);
                     dataUser = advanceModel.PostAdvance(advanceRequest, 7);
+
                     // Validar saldo en cobre
                     this.ISValidateAccountBalance(dataUser, jsonElement);
 
                     //Se elimina la foto
                     string pathImagenClient = _configuration["route:pathPhotoAdvance"] + "\\" + dataUser.Rows[0]["id_anticipo"] + ".jpg";
                     File.Delete(pathImagenClient);
+
+                    //Validacion de webbhok por api
+                    if (dataUser.Rows[0]["api_key"].ToString() == "API")
+                    {
+                        WebhookCore webhookCore = new(_configuration);
+                        webhookCore.SendWebhook(int.Parse(dataUser.Rows[0]["id_anticipo"].ToString()));
+                    }
 
                     if (dataUser.Rows[0]["state"].ToString() == "2")
                     {
@@ -309,7 +325,7 @@ namespace WebServicesAnticiposNomina.Core
                     {
                         bodyEmail = utilities.GetBodyEmailCode("", dataUser, 2);
                         var email = utilities.SendEmail(dataUser.Rows[0]["email"].ToString(), "Anticipo rechazado", bodyEmail, true, "");
-                        code = "204";
+                        code = "204 - rechazado";
                     }
 
                     return code;

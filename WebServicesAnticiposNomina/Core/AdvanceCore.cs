@@ -90,21 +90,24 @@ namespace WebServicesAnticiposNomina.Core
                     {
                         AdvanceModel advanceModel = new(_configuration);
                         Utilities utilities = new(_configuration);
+                        ResponseCobre responseCobre = new();
                         try
                         {
                             DataTable dataUser = advanceModel.PostAdvance(advanceRequest, 2);
                             responseModels.MessageResponse = dataUser.Rows[0]["msg"].ToString();
-                            if (dataUser.Rows[0]["state"].ToString() == "3")
+                            string? state = dataUser.Rows[0]["state"].ToString();
+                            if (state == "3" || state == "4")
                             {
-                                responseModels.CodeResponse = "201";
+                                responseModels.CodeResponse = state == "3" ? "201" : "206";
                                 responseModels.Token = Token;
+                                responseModels.DataApiCobre = responseCobre;
                                 return responseModels;
                             }
 
-                            if (dataUser.Rows[0]["state"].ToString() == "1")
+                            if (state == "1")
                             {
                                 ApiCobreCore apiCobreCore = new(_configuration);
-                                ResponseCobre responseCobre = apiCobreCore.PostPaymentAdvance(dataUser);
+                                responseCobre = apiCobreCore.PostPaymentAdvance(dataUser);
 
                                 responseModels.CodeResponse = "201";
                                 responseModels.DataApiCobre = responseCobre;
