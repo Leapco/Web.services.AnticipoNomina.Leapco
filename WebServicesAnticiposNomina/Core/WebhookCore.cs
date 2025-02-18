@@ -46,7 +46,7 @@ namespace WebServicesAnticiposNomina.Core
 
                     if (response.IsSuccessStatusCode)
                     {
-                        logRequest.Observacion = $"Webhook correctamente | Id_Anticipo : {idAnticipo}";
+                        logRequest.Observacion = $"Webhook enviado correctamente | Id_Anticipo : {idAnticipo}";
                         _logsModel.PostLog(logRequest);
                         return true;
                     }
