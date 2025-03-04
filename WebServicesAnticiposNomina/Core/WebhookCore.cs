@@ -52,7 +52,7 @@ namespace WebServicesAnticiposNomina.Core
                     }
                     else
                     {
-                        logRequest.Observacion = $"Webhook | Id_Anticipo : {idAnticipo}";
+                        logRequest.Observacion = $"Webhook no envio | Id_Anticipo : {idAnticipo}";
                         _logsModel.PostLog(logRequest);
                         return false;
                     }

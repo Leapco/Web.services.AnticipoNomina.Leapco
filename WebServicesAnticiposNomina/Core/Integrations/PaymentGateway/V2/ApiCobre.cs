@@ -8,7 +8,7 @@ using WebServicesAnticiposNomina.Models.Class.Request;
 using WebServicesAnticiposNomina.Models.DataBase;
 using WebServicesAnticiposNomina.Models.DataBase.Utilities;
 
-namespace WebServicesAnticiposNomina.Models.PaymentGateway
+namespace WebServicesAnticiposNomina.Core.Integrations.PaymentGateway.V2
 {
     public class ApiCobre_v3
     {
@@ -306,7 +306,7 @@ namespace WebServicesAnticiposNomina.Models.PaymentGateway
                     var url = _configuration["paymentGateway:route"] + "/counterparties";
 
                     // Serializar el objeto de solicitud a JSON
-                    var jsonContent = JsonConvert.SerializeObject(this.GetJsonCouterParty(dataUser));
+                    var jsonContent = JsonConvert.SerializeObject(GetJsonCouterParty(dataUser));
                     var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
 
                     // Agregar el token de autorización

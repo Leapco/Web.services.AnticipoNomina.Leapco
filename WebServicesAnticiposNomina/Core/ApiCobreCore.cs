@@ -1,11 +1,11 @@
 ﻿using Newtonsoft.Json;
 using System.Data;
 using System.Text.Json;
+using WebServicesAnticiposNomina.Core.Integrations.PaymentGateway.V2;
 using WebServicesAnticiposNomina.Models.Class;
 using WebServicesAnticiposNomina.Models.Class.Request;
 using WebServicesAnticiposNomina.Models.DataBase;
 using WebServicesAnticiposNomina.Models.DataBase.Utilities;
-using WebServicesAnticiposNomina.Models.PaymentGateway;
 
 namespace WebServicesAnticiposNomina.Core
 {

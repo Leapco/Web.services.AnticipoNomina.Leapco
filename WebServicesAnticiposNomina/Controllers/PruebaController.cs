@@ -6,11 +6,12 @@ using System.Data;
 using System.IO;
 using System.Text.Json;
 using WebServicesAnticiposNomina.Core;
+using WebServicesAnticiposNomina.Core.Integrations.PaymentGateway.V2;
+using WebServicesAnticiposNomina.Core.Integrations.SIIGO.V1;
 using WebServicesAnticiposNomina.Models.Class;
 using WebServicesAnticiposNomina.Models.Class.Request;
 using WebServicesAnticiposNomina.Models.DataBase;
 using WebServicesAnticiposNomina.Models.DataBase.Utilities;
-using WebServicesAnticiposNomina.Models.PaymentGateway;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -65,131 +66,131 @@ namespace WebServicesAnticiposNomina.Controllers
 
 
         //[HttpPost]
-        //public string ADVANCE(AdvanceRequest advanceRequest)
+        //public void ADVANCE(AdvanceRequest advanceRequest)
         //{
         //    ApiCobre_v3 apiCobre_V3 = new ApiCobre_v3(_Configuration);
 
-        //   string TOKEN_ACCES = apiCobre_V3.PostAuthToken_DEV();
+        //    string TOKEN_ACCES = apiCobre_V3.PostAuthToken_DEV();
 
-        //    //    //var a = apiCobre_V3.GetCounterPartyID(TOKEN_ACCES, "cp_flRX11JLRj");
+        //    //    //    //var a = apiCobre_V3.GetCounterPartyID(TOKEN_ACCES, "cp_flRX11JLRj");
 
-        //    //    //long balance = apiCobre_V3.GetBalanceBank_DEV(TOKEN_ACCES);
+        //    //    //    //long balance = apiCobre_V3.GetBalanceBank_DEV(TOKEN_ACCES);
 
 
 
-        //    //    //LogsModel logsModel = new LogsModel(_Configuration);
-        //    //    //LogRequest logRequest = new LogRequest()
-        //    //    //{
-        //    //    //    Origen = "GetDataAccountUser",
-        //    //    //    Request_json = "prueba",
-        //    //    //    Observacion = "Error creando counter party"
-        //    //    //};
-        //    //    //var a =logsModel.PostLog(logRequest);
+        //    //    //    //LogsModel logsModel = new LogsModel(_Configuration);
+        //    //    //    //LogRequest logRequest = new LogRequest()
+        //    //    //    //{
+        //    //    //    //    Origen = "GetDataAccountUser",
+        //    //    //    //    Request_json = "prueba",
+        //    //    //    //    Observacion = "Error creando counter party"
+        //    //    //    //};
+        //    //    //    //var a =logsModel.PostLog(logRequest);
 
 
 
         //    AdvanceModel advanceModel = new(_Configuration);
         //    ApiCobreCore apiCobreCore = new ApiCobreCore(_Configuration);
         //    DataTable dataUser = advanceModel.PostAdvance(advanceRequest, 2);
+        //    //    Utilities utilities = new(_Configuration);
+
+        //    //    //string destination_id = apiCobre_V3.PostCounterParty(TOKEN_ACCES, dataUser);
+        //    var id_cuenta_pasarela = apiCobreCore.GetDataAccountUser(dataUser, TOKEN_ACCES);
+
+        //    //    //    //int balance = apiCobre_V3.GetBalanceBank(TOKEN_ACCES, dataUser);
+
+        //    //    //    //dataUser.Rows[0]["id_cuenta_pasarela"] = id_cuenta_pasarela;
+        //    //    string bodyMessage;
+
+
+        //    //    //bodyMessage = utilities.GetBodyEmailCode("067534", dataUser, 1);
+        //    //   // utilities.SendEmail(dataUser.Rows[0]["email"].ToString(), "Anticipo generado", bodyMessage, true, "");
+
+        //    //    //ResponseCobre responseCobre = apiCobreCore.PostPaymentAdvance(dataUser);
+
+        //    //    //    //advanceRequest.uuid = destination_id;
+        //    //    //    //dataUser = advanceModel.PostAdvance(advanceRequest, 9);
+        //    //    //    //int balance = apiCobre_V3.GetBalanceBank_DEV(TOKEN_ACCES);
+
+        //    //    return $"valor de la cuenta de jiro : ";
+        //}
+        ////GET api/<PruebaController>/5
+        //[HttpGet]
+        //public async Task<string> Get(string celular, string mesaje)
+        //{
         //    Utilities utilities = new(_Configuration);
-
-        //    //string destination_id = apiCobre_V3.PostCounterParty(TOKEN_ACCES, dataUser);
-        //    //    //var id_cuenta_pasarela = apiCobreCore.GetDataAccountUser(dataUser, TOKEN_ACCES);
-
-        //    //    //int balance = apiCobre_V3.GetBalanceBank(TOKEN_ACCES, dataUser);
-
-        //    //    //dataUser.Rows[0]["id_cuenta_pasarela"] = id_cuenta_pasarela;
-        //    string bodyMessage;
+        //    await utilities.SendSms(celular, mesaje);
+        //    return "melo";
+        //}
+        //     //utilities.SendEmail("joshuatejada@hotmail.com", "Anticipo generado", "prueba", false, "");
 
 
-        //    //bodyMessage = utilities.GetBodyEmailCode("067534", dataUser, 1);
-        //   // utilities.SendEmail(dataUser.Rows[0]["email"].ToString(), "Anticipo generado", bodyMessage, true, "");
+        //    return "Mensaje enviado";
+        //}
+        // GET api/<PruebaController>/5
+        //[HttpGet]
+        //public async Task<string> GetSms()
+        //{
+        //    Utilities utilities = new(_Configuration);
+        //    utilities.SendSms("3007185717","hola soy yo");
+        //    return "Email enviado";
+        //}
 
-        //    //ResponseCobre responseCobre = apiCobreCore.PostPaymentAdvance(dataUser);
+        //[HttpPost]
+        //public async Task<IActionResult> SendSMS()
+        //{
+        //     HttpClient _httpClient = new HttpClient();
+        //    _httpClient.BaseAddress = new Uri("https://dashboard.360nrs.com/api/rest/sms");
 
-        //    //    //advanceRequest.uuid = destination_id;
-        //    //    //dataUser = advanceModel.PostAdvance(advanceRequest, 9);
-        //    //    //int balance = apiCobre_V3.GetBalanceBank_DEV(TOKEN_ACCES);
+        //    var requestBody = "{ \"to\": [\"3007185717\"], \"from\": \"TEST\", \"message\": \"SMS text message\" }";
+        //    var content = new StringContent(requestBody, Encoding.UTF8, "application/json");
 
-        //    return $"valor de la cuenta de jiro : ";
-        //   }
-            ////GET api/<PruebaController>/5
-            //[HttpGet]
-            //public async Task<string> Get(string celular, string mesaje)
-            //{
-            //    Utilities utilities = new(_Configuration);
-            //    await utilities.SendSms(celular, mesaje);
-            //    return "melo";
-            //}
-            //     //utilities.SendEmail("joshuatejada@hotmail.com", "Anticipo generado", "prueba", false, "");
+        //    _httpClient.DefaultRequestHeaders.Add("Authorization", "Basic  " + Convert.ToBase64String(Encoding.UTF8.GetBytes($"{"JIROOTP"}:{"Gsms2024$$"}")));
 
+        //    var response = await _httpClient.PostAsync("", content);
 
-            //    return "Mensaje enviado";
-            //}
-            // GET api/<PruebaController>/5
-            //[HttpGet]
-            //public async Task<string> GetSms()
-            //{
-            //    Utilities utilities = new(_Configuration);
-            //    utilities.SendSms("3007185717","hola soy yo");
-            //    return "Email enviado";
-            //}
+        //    if (response.IsSuccessStatusCode)
+        //    {
+        //        var responseContent = await response.Content.ReadAsStringAsync();
+        //        return Ok(responseContent);
+        //    }
+        //    else
+        //    {
+        //        return BadRequest("Failed to send SMS");
+        //    }
+        //}
+        //public IActionResult CreateDocument(string imagePath)
+        //{
+        //    var docPath = @"C:\\Users\\uinformatica6.GIGHA\\OneDrive - GIGHA SAS - JIRO SAS\\Documentos\\Dev\\archive\\contratostemplateContract.docx";
+        //    var pdfPath = @"C:\\Users\\uinformatica6.GIGHA\\OneDrive - GIGHA SAS - JIRO SAS\\Documentos\\Dev\\archive\\contratostemplateContract.pdf";
 
-            //[HttpPost]
-            //public async Task<IActionResult> SendSMS()
-            //{
-            //     HttpClient _httpClient = new HttpClient();
-            //    _httpClient.BaseAddress = new Uri("https://dashboard.360nrs.com/api/rest/sms");
+        //    using (WordprocessingDocument wordDocument = WordprocessingDocument.Create(docPath, WordprocessingDocumentType.Docume"nt))
+        //    {
+        //        MainDocumentPart mainPart = wordDocument.AddMainDocumentPart();
+        //        mainPart.Document = new Document();
+        //        Body body = mainPart.Document.AppendChild(new Body());
 
-            //    var requestBody = "{ \"to\": [\"3007185717\"], \"from\": \"TEST\", \"message\": \"SMS text message\" }";
-            //    var content = new StringContent(requestBody, Encoding.UTF8, "application/json");
+        //        // Agregar párrafo con imagen
+        //        Paragraph para = body.AppendChild(new Paragraph());
+        //        Run run = para.AppendChild(new Run());
+        //        Drawing drawing = run.AppendChild(new Drawing());
+        //        Inline inline = drawing.AppendChild(new Inline());
+        //        Extent extent = new Extent() { Cx = 990000L, Cy = 792000L };
+        //        inline.AppendChild(extent);
+        //        DocProperties docProperties = new DocProperties() { Id = (UInt32Value)1U, Name = "Picture 1" };
+        //        inline.AppendChild(docProperties);
+        //        Graphic graphic = inline.AppendChild(new Graphic());
+        //        graphic.AppendChild(new GraphicData(new Picture(new BlipFill(new Blip() { Embed = imageId }, new Stretch(new FillRectangle())))) { Uri = "http://schemas.openxmlformats.org/drawingml/2006/picture" });
+        //        wordDocument.MainDocumentPart.Document.Save();
+        //    }
 
-            //    _httpClient.DefaultRequestHeaders.Add("Authorization", "Basic  " + Convert.ToBase64String(Encoding.UTF8.GetBytes($"{"JIROOTP"}:{"Gsms2024$$"}")));
+        //    // Convertir a PDF
+        //    using (PdfDocument pdfDocument = PdfReader.Open(docPath, PdfDocumentOpenMode.Modify))
+        //    {
+        //        pdfDocument.Save(pdfPath);
+        //    }
 
-            //    var response = await _httpClient.PostAsync("", content);
-
-            //    if (response.IsSuccessStatusCode)
-            //    {
-            //        var responseContent = await response.Content.ReadAsStringAsync();
-            //        return Ok(responseContent);
-            //    }
-            //    else
-            //    {
-            //        return BadRequest("Failed to send SMS");
-            //    }
-            //}
-            //public IActionResult CreateDocument(string imagePath)
-            //{
-            //    var docPath = @"C:\\Users\\uinformatica6.GIGHA\\OneDrive - GIGHA SAS - JIRO SAS\\Documentos\\Dev\\archive\\contratostemplateContract.docx";
-            //    var pdfPath = @"C:\\Users\\uinformatica6.GIGHA\\OneDrive - GIGHA SAS - JIRO SAS\\Documentos\\Dev\\archive\\contratostemplateContract.pdf";
-
-            //    using (WordprocessingDocument wordDocument = WordprocessingDocument.Create(docPath, WordprocessingDocumentType.Docume"nt))
-            //    {
-            //        MainDocumentPart mainPart = wordDocument.AddMainDocumentPart();
-            //        mainPart.Document = new Document();
-            //        Body body = mainPart.Document.AppendChild(new Body());
-
-            //        // Agregar párrafo con imagen
-            //        Paragraph para = body.AppendChild(new Paragraph());
-            //        Run run = para.AppendChild(new Run());
-            //        Drawing drawing = run.AppendChild(new Drawing());
-            //        Inline inline = drawing.AppendChild(new Inline());
-            //        Extent extent = new Extent() { Cx = 990000L, Cy = 792000L };
-            //        inline.AppendChild(extent);
-            //        DocProperties docProperties = new DocProperties() { Id = (UInt32Value)1U, Name = "Picture 1" };
-            //        inline.AppendChild(docProperties);
-            //        Graphic graphic = inline.AppendChild(new Graphic());
-            //        graphic.AppendChild(new GraphicData(new Picture(new BlipFill(new Blip() { Embed = imageId }, new Stretch(new FillRectangle())))) { Uri = "http://schemas.openxmlformats.org/drawingml/2006/picture" });
-            //        wordDocument.MainDocumentPart.Document.Save();
-            //    }
-
-            //    // Convertir a PDF
-            //    using (PdfDocument pdfDocument = PdfReader.Open(docPath, PdfDocumentOpenMode.Modify))
-            //    {
-            //        pdfDocument.Save(pdfPath);
-            //    }
-
-            //    return File(System.IO.File.ReadAllBytes(pdfPath), "application/pdf", "document.pdf");
+        //    return File(System.IO.File.ReadAllBytes(pdfPath), "application/pdf", "document.pdf");
         //}
 
         //private readonly string _contractsPath = @"C:\Users\uinformatica6.GIGHA\OneDrive - GIGHA SAS - JIRO SAS\Documentos\Dev\archive\contratos";
@@ -320,5 +321,16 @@ namespace WebServicesAnticiposNomina.Controllers
         //    }
         //    return "imagen subida";
         //}
+
+
+
+
+        ///////   PRUEBAS SIIGO \\\\\\
+        [HttpPost]
+        public string PostAuthSiigo(CredentialsClass credentials)
+        {
+            SiigoCore siigoCore = new();
+            return siigoCore.PostAuthSiigo(credentials);
+        }
     }
 }

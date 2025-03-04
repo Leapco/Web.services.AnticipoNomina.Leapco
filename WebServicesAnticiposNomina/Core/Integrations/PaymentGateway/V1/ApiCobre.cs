@@ -7,7 +7,7 @@ using WebServicesAnticiposNomina.Models.Class.Response;
 using WebServicesAnticiposNomina.Models.DataBase;
 using WebServicesAnticiposNomina.Models.DataBase.Utilities;
 
-namespace WebServicesAnticiposNomina.Models.PaymentGateway
+namespace WebServicesAnticiposNomina.Core.Integrations.PaymentGateway.V1
 {
     public class ApiCobre
     {
@@ -108,7 +108,7 @@ namespace WebServicesAnticiposNomina.Models.PaymentGateway
                                   ""bankInfo"": {
                                       ""bankCode"": """ + paymentClass.noveltyDetails[0].beneficiary.bankInfo.bankCode.Trim() + @""",
                                       ""accountType"": """ + paymentClass.noveltyDetails[0].beneficiary.bankInfo.accountType.Trim() + @""",
-                                      ""accountNumber"": """ + (paymentClass.noveltyDetails[0].beneficiary.bankInfo.accountNumber).Trim() + @"""
+                                      ""accountNumber"": """ + paymentClass.noveltyDetails[0].beneficiary.bankInfo.accountNumber.Trim() + @"""
                                   }
                               }
                           }
