@@ -126,7 +126,6 @@ namespace WebServicesAnticiposNomina.Core.Integrations.PaymentGateway.V2
                     secret = dataUser.Rows[0]["ClaveCobre"]
                 };
 
-                // Convertir el objeto a JSON
                 var jsonContent = JsonConvert.SerializeObject(requestBody);
                 var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
 
@@ -136,7 +135,6 @@ namespace WebServicesAnticiposNomina.Core.Integrations.PaymentGateway.V2
                     var response = _httpClient.PostAsync(url, content).Result;
                     if (response.IsSuccessStatusCode)
                     {
-                        // Leer el contenido de la respuesta
                         var responseBody = response.Content.ReadAsStringAsync().Result;
                         dynamic jsonObject = JsonConvert.DeserializeObject<dynamic>(responseBody);
                         string accessToken = jsonObject.access_token;
@@ -152,7 +150,7 @@ namespace WebServicesAnticiposNomina.Core.Integrations.PaymentGateway.V2
                     LogRequest logRequest = new LogRequest()
                     {
                         Origen = "PostAuthToken",
-                        Request_json = "credentials", // Organizar credenciales de seccion 
+                        Request_json = "credentials",
                         Observacion = $"Autenticacion Cobre v3 - " + ex.Message,
                     };
                     logsModel.PostLog(logRequest);
@@ -390,7 +388,7 @@ namespace WebServicesAnticiposNomina.Core.Integrations.PaymentGateway.V2
 
             var name = dataUser.Rows[0]["name"].ToString();
             var lastName = dataUser.Rows[0]["lastName"].ToString();
-            if (!string.IsNullOrEmpty(name) && !string.IsNullOrEmpty(lastName))
+            if (!string.IsNullOrEmpty(name) || !string.IsNullOrEmpty(lastName))
             {
                 metadata.counterparty_fullname = RemoveDiacritics(name + " " + lastName);
             }
@@ -403,7 +401,6 @@ namespace WebServicesAnticiposNomina.Core.Integrations.PaymentGateway.V2
                 metadata.beneficiary_institution = dataUser.Rows[0]["bankCode"].ToString();
             else
                 return null;
-
 
             counterpartyRequest.metadata = metadata;
 

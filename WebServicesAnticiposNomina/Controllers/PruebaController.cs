@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
+using System.Text;
 using System.Text.Json;
 using WebServicesAnticiposNomina.Core;
 using WebServicesAnticiposNomina.Core.Integrations.PaymentGateway.V2;
@@ -136,29 +137,31 @@ namespace WebServicesAnticiposNomina.Controllers
         //    return "Email enviado";
         //}
 
-        //[HttpPost]
-        //public async Task<IActionResult> SendSMS()
-        //{
-        //     HttpClient _httpClient = new HttpClient();
-        //    _httpClient.BaseAddress = new Uri("https://dashboard.360nrs.com/api/rest/sms");
+        [HttpPost]
+        public async Task<IActionResult> SendSMS()
+        {
+            HttpClient _httpClient = new HttpClient();
+            _httpClient.BaseAddress = new Uri("https://dashboard.360nrs.com/api/rest/sms");
 
-        //    var requestBody = "{ \"to\": [\"3007185717\"], \"from\": \"TEST\", \"message\": \"SMS text message\" }";
-        //    var content = new StringContent(requestBody, Encoding.UTF8, "application/json");
+            var requestBody = "{ \"to\": [\"3007185717\"], \"from\": \"TEST\", \"message\": \"SMS text message\" }";
+            var content = new StringContent(requestBody, Encoding.UTF8, "application/json");
 
-        //    _httpClient.DefaultRequestHeaders.Add("Authorization", "Basic  " + Convert.ToBase64String(Encoding.UTF8.GetBytes($"{"JIROOTP"}:{"Gsms2024$$"}")));
+            _httpClient.DefaultRequestHeaders.Add("Authorization", "Basic  " + Convert.ToBase64String(Encoding.UTF8.GetBytes($"{"LEAPCOOTP"}:{"WEaw97@'"}")));
 
-        //    var response = await _httpClient.PostAsync("", content);
+            var response = await _httpClient.PostAsync("", content);
 
-        //    if (response.IsSuccessStatusCode)
-        //    {
-        //        var responseContent = await response.Content.ReadAsStringAsync();
-        //        return Ok(responseContent);
-        //    }
-        //    else
-        //    {
-        //        return BadRequest("Failed to send SMS");
-        //    }
-        //}
+            if (response.IsSuccessStatusCode)
+            {
+                var responseContent = await response.Content.ReadAsStringAsync();
+                return Ok(responseContent);
+            }
+            else
+            {
+                return BadRequest("Failed to send SMS");
+            }
+        }
+
+
         //public IActionResult CreateDocument(string imagePath)
         //{
         //    var docPath = @"C:\\Users\\uinformatica6.GIGHA\\OneDrive - GIGHA SAS - JIRO SAS\\Documentos\\Dev\\archive\\contratostemplateContract.docx";
@@ -321,16 +324,18 @@ namespace WebServicesAnticiposNomina.Controllers
         //    }
         //    return "imagen subida";
         //}
-
-
-
-
-        ///////   PRUEBAS SIIGO \\\\\\
-        [HttpPost]
-        public string PostAuthSiigo(CredentialsClass credentials)
-        {
-            SiigoCore siigoCore = new();
-            return siigoCore.PostAuthSiigo(credentials);
-        }
+        ////////      PRUEBAS SIIGO     \\\\\\
+        //[HttpPost]
+        //public string PostAuthSiigo(CredentialsClass credentials)
+        //{
+        //    SiigoCore siigoCore = new(_Configuration);
+        //    return siigoCore.PostAuthSiigo(credentials);
+        //}
+        //[HttpGet]
+        //public string GetAuthSiigo(int id_cliente)
+        //{
+        //    SiigoCore siigoCore = new(_Configuration);
+        //    return siigoCore.PostCounterPartyClientesCobre(id_cliente);
+        //}
     }
 }
