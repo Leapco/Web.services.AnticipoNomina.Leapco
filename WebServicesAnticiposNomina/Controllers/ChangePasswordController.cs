@@ -32,7 +32,7 @@ namespace WebServicesAnticiposNomina.Controllers
             return responseModels;
         }
 
-        [HttpPost]
+        [HttpPut]
         public ResponseModels ResponseModels([FromHeader] string Token, [FromBody] UpdatePasswordRequest updatePasswordRequest)
         {
             ResponseModels responseModels = new();

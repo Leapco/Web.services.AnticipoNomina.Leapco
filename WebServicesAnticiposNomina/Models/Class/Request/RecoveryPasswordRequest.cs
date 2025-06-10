@@ -4,6 +4,7 @@
     {
         public string? ID { get; set; }
         public string? NewPassword { get; set; }
+        public string? NewPasswordText { get; set; }
         public string? Code { get; set; }
     }
 }

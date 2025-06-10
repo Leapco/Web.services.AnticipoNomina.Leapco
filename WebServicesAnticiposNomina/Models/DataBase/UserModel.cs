@@ -61,6 +61,8 @@ namespace WebServicesAnticiposNomina.Models.SQLServer
                 {
                     dbConnection.CreateParam("UserId", UpdatePasswordRequest.ID, DbType.String),
                     dbConnection.CreateParam("NewPassword", UpdatePasswordRequest.NewPassword, DbType.String),
+                    dbConnection.CreateParam("NewPasswordText", UpdatePasswordRequest.NewPasswordText, DbType.String),
+                    dbConnection.CreateParam("Code", UpdatePasswordRequest.Code, DbType.String),
                     dbConnection.CreateParam("Option", Option, DbType.String)
                 };
                 return dbConnection.GetDataTable("ActualizarClaveUsuario", parameters);

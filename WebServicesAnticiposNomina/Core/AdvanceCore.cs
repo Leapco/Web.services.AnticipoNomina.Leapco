@@ -44,20 +44,21 @@ namespace WebServicesAnticiposNomina.Core
 
                         if (dataUser.Rows[0]["state"].ToString() == "1")
                         {
-                            if (AdvanceRequest.Base64Image.Length > 6)
-                                utilities.SavePhoto(AdvanceRequest.Base64Image, int.Parse(dataUser.Rows[0]["id_anticipo"].ToString()));
+                            // Guardar foto
+                            //if (AdvanceRequest.Base64Image.Length > 6)
+                            //    utilities.SavePhoto(AdvanceRequest.Base64Image, int.Parse(dataUser.Rows[0]["id_anticipo"].ToString()));
 
                             if (AdvanceRequest.Email.Count() > 6)
                             {
-                                string bodyMessage = utilities.GetBodyEmailCode(AdvanceRequest.Code, dataUser, 1);
-                                utilities.SendEmail(AdvanceRequest.Email, "Código anticipo", bodyMessage, true, "");
+                                string bodyMessage = utilities.GetBodyEmailCode(AdvanceRequest.Code, dataUser, 6);
+                                utilities.SendEmail(dataUser.Rows[0]["correo"].ToString(), "Código anticipo", bodyMessage, true, "");
                             }
                             else
-                                utilities.SendSms(AdvanceRequest.CellPhone, $"Codigo para el anticipo es: {AdvanceRequest.Code}");
+                                utilities.SendSms(dataUser.Rows[0]["celular"].ToString(), $"Codigo para el anticipo es: {AdvanceRequest.Code}");
 
                             responseModels.Token = Token;
                             responseModels.CodeResponse = "201";
-                            responseModels.Data = "{'codigo': '" + utilities.EncryptCode(AdvanceRequest.Code, 2) + "', 'Email': '" + dataUser.Rows[0]["email"].ToString() + "'}";
+                            //responseModels.Data = "{'codigo': '" + utilities.EncryptCode(AdvanceRequest.Code, 2) + "', 'Email': '" + dataUser.Rows[0]["email"].ToString() + "'}";
                         }
                         else
                             responseModels.CodeResponse = "200";
@@ -96,11 +97,11 @@ namespace WebServicesAnticiposNomina.Core
                             DataTable dataUser = advanceModel.PostAdvance(advanceRequest, 2);
                             responseModels.MessageResponse = dataUser.Rows[0]["msg"].ToString();
                             string? state = dataUser.Rows[0]["state"].ToString();
-                            if (state == "3" || state == "4")
+                            if (state == "3" || state == "4" || state == "5")
                             {
-                                responseModels.CodeResponse = state == "3" ? "201" : "206";
+                                // 5 = codigo no es valido
+                                responseModels.CodeResponse = state == "3" ? "201" : state == "5" ? "207" : "206";
                                 responseModels.Token = Token;
-                                responseModels.DataApiCobre = responseCobre;
                                 return responseModels;
                             }
 
@@ -212,20 +213,22 @@ namespace WebServicesAnticiposNomina.Core
                 // creo el contrato base en html
                 File.Copy(_configuration["route:pathTemplace"] + "\\Contract.html", pathContract);
 
+                /*
                 // Leer la imagen y la convierto en base64
                 string pathImagenClient = _configuration["route:pathPhotoAdvance"] + "\\" + dataTable.Rows[0]["id_anticipo"] + ".jpg";
 
                 // validar foto
                 if (!File.Exists(pathImagenClient)) pathImagenClient = _configuration["route:pathPhotoAdvance"] + "\\pordefecto.jpg";
-
+                
                 byte[] imageBytes = System.IO.File.ReadAllBytes(pathImagenClient);
                 string base64Image = Convert.ToBase64String(imageBytes);
+                */
 
                 // region
                 string base64Signature = GenerateQRCode(dataTable.Rows[0]["firma_digital"].ToString());
 
                 // modifico el contrato en html
-                this.GetHtmlContent(pathContract, dataTable.Rows[0]["Contrato"].ToString(), base64Image, base64Signature);
+                this.GetHtmlContent(pathContract, dataTable.Rows[0]["Contrato"].ToString(), "", base64Signature);
 
                 // Convertir HTML a PDF
                 var htmlCode = File.ReadAllText(pathContract);
@@ -243,10 +246,10 @@ namespace WebServicesAnticiposNomina.Core
                 // Elimino foto y contrato en html
                 File.Delete(pathContract);
 
-                if (!pathImagenClient.Contains("pordefecto"))
+                /*if (!pathImagenClient.Contains("pordefecto"))
                 {
                     File.Delete(pathImagenClient);
-                }
+                }*/
 
                 return true;
             }
@@ -263,8 +266,10 @@ namespace WebServicesAnticiposNomina.Core
                 htmlContent = htmlContent.Replace("<p id=\"contrato\"></p>", $"<p id=\"textContract\">{textContract}</p>");
                 System.IO.File.WriteAllText(pathContract, htmlContent);
 
+                /* Se elimino la imagen del contrato
                 htmlContent = htmlContent.Replace("<img class=\"img-item\" id=\"foto\">", $"<img class=\"img-item\" id=\"foto\" src=\"data:image/png;base64,{base64Image}\" alt =\"Imagen Base64\">");
                 System.IO.File.WriteAllText(pathContract, htmlContent);
+                */
 
                 htmlContent = htmlContent.Replace("<img class=\"img-item\" id=\"QR\">", $"<img class=\"img-item\" id=\"QR\" src=\"data:image/png;base64,{base64Signature}\" alt =\"Imagen Base64\" width=\"50\" height=\"50\">");
                 System.IO.File.WriteAllText(pathContract, htmlContent);
@@ -408,17 +413,17 @@ namespace WebServicesAnticiposNomina.Core
                     string pathImagenClient = _configuration["route:pathPhotoAdvance"] + "\\" + dataTable.Rows[0]["id_anticipo"] + ".jpg";
 
                     // validar foto
-                    if (!File.Exists(pathImagenClient)) pathImagenClient = _configuration["route:pathPhotoAdvance"] + "\\pordefecto.jpg";
+                    //if (!File.Exists(pathImagenClient)) pathImagenClient = _configuration["route:pathPhotoAdvance"] + "\\pordefecto.jpg";
 
-                    byte[] imageBytes = System.IO.File.ReadAllBytes(pathImagenClient);
-                    string base64Image = Convert.ToBase64String(imageBytes);
+                    //byte[] imageBytes = System.IO.File.ReadAllBytes(pathImagenClient);
+                    //string base64Image = Convert.ToBase64String(imageBytes);
 
                     // region
                     string base64Signature = GenerateQRCode(dataTable.Rows[0]["firma_digital"].ToString());
                     //agregar al contrato
 
                     // modifico el contrato en html
-                    this.GetHtmlContent(pathContract, dataTable.Rows[0]["Contrato"].ToString(), base64Image, base64Signature);
+                    this.GetHtmlContent(pathContract, dataTable.Rows[0]["Contrato"].ToString(), "", base64Signature);
 
                     // Convertir HTML a PDF
                     var htmlCode = File.ReadAllText(pathContract);
@@ -433,7 +438,7 @@ namespace WebServicesAnticiposNomina.Core
 
                     // Elimino foto y contrato en html
                     File.Delete(pathContract);
-                    File.Delete(pathImagenClient);
+                    //File.Delete(pathImagenClient);
                 }
                 return true;
             }
@@ -442,5 +447,63 @@ namespace WebServicesAnticiposNomina.Core
                 throw;
             }
         }
+        public int AutomaticValidationAdvances()
+        {
+            try
+            {
+                AdvanceModel advanceModel = new(_configuration);
+                Utilities utilities = new(_configuration);
+                DataTable dataUser = advanceModel.PostAdvance(new AdvanceRequest(), 15);
+                string bodyMessage = string.Empty;
+
+                // Si hay al menos un registro, armamos el cuerpo del mensaje
+                if (dataUser.Rows.Count >= 1)
+                {
+                    // Saludo inicial y lista de movimientos
+                    bodyMessage = "Cordial saludo,\r\n\r\n" +
+                                  "Me permito reportar que los siguientes movimientos continúan en estado pendiente desde hace unos días:\r\n";
+
+                    foreach (DataRow row in dataUser.Rows)
+                    {
+                        string uuid = row["uuid"].ToString();
+                        bodyMessage += $"- ID de movimiento: {uuid}\r\n";
+                    }
+
+                    // Extraemos los datos del usuario desde la primera fila
+                    string identificacion = dataUser.Rows[0]["identificacion"].ToString();
+                    string nombre = dataUser.Rows[0]["nombres"].ToString();
+                    string correo = dataUser.Rows[0]["correo"].ToString();
+
+                    // Sección de datos del usuario
+                    bodyMessage += "\r\nDatos usuarios:\r\n";
+                    bodyMessage += $"- Identificación: {identificacion}, Nombre: {nombre}, Correo: {correo}\r\n\r\n";
+
+                    // Cierre del mensaje
+                    bodyMessage += "Agradecería mucho su pronta gestión para asignar un estado final a estos movimientos, " +
+                                   "ya que es crucial confirmar si los fondos fueron efectivamente transferidos y están disponibles para cobro.\r\n\r\n" +
+                                   "Quedo muy atento a cualquier información adicional que puedan requerir de mi parte para agilizar este proceso.";
+                }
+
+                // Si construimos bodyMessage, enviamos el correo y devolvemos 200; si no, devolvemos 204
+                if (!string.IsNullOrEmpty(bodyMessage))
+                {
+                    utilities.SendEmailSoport(
+                        _configuration["paymentGateway:Correo"],
+                        "Novedad en movimientos",
+                        bodyMessage,
+                        false,
+                        ""
+                    );
+                    return 200;
+                }
+
+                return 204;
+            }
+            catch (Exception)
+            {
+                return 500;
+            }
+        }
+
     }
 }
