@@ -120,7 +120,7 @@ namespace WebServicesAnticiposNomina.Controllers
         public async Task<string> Get()
         {
             Utilities utilities = new(_Configuration);
-            await utilities.SendEmailSoport("joshuatejada30@gmail.com", "prueba", "hola joven, maquina", false,"" );
+            await utilities.SendEmailSoport("joshuatejada30@gmail.com", "prueba", "hola joven,  maquina", false,"" );
             return "melo";
         }
         
